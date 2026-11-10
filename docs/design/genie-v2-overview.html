@@ -1,0 +1,370 @@
+<title>Genie v2 Overview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column (~1080px). Summary + key limits, then a three-lane journey (user / admin / system), rules, diagrams, stack, data, plan */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #17202b;
+  --muted: #5b6676;
+  --line: #dde2e9;
+  --user: #0f766e;   --user-soft: #e3f3f1;     /* public user */
+  --admin: #4f46e5;  --admin-soft: #ecebfd;    /* admins */
+  --sys: #9a5b13;    --sys-soft: #f8eedf;      /* system / agents */
+  --yes: #15803d;
+  --no: #a1a9b5;
+  --font-display: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --surface: #182029; --fg: #e6eaf0; --muted: #98a3b3; --line: #2a3441;
+    --user: #4fd1c0; --user-soft: #12302d; --admin: #a5a1ff; --admin-soft: #24234a;
+    --sys: #e5a862; --sys-soft: #33261a; --yes: #4ade80; --no: #5d6775;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #182029; --fg: #e6eaf0; --muted: #98a3b3; --line: #2a3441;
+  --user: #4fd1c0; --user-soft: #12302d; --admin: #a5a1ff; --admin-soft: #24234a;
+  --sys: #e5a862; --sys-soft: #33261a; --yes: #4ade80; --no: #5d6775;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+  display: grid; gap: 56px;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+h1 { font-size: 2.3rem; font-weight: 700; letter-spacing: -0.015em; }
+h2 { font-size: 1.35rem; font-weight: 650; }
+h3 { font-size: 1rem; font-weight: 600; }
+p { margin: 0; max-width: 70ch; }
+code { font-family: var(--font-mono); font-size: 0.85em; }
+a { color: var(--admin); }
+a:focus-visible { outline: 2px solid var(--admin); outline-offset: 2px; }
+.eyebrow { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+section { display: grid; gap: 16px; min-width: 0; }
+.sub { color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+
+/* header */
+header { display: grid; gap: 14px; }
+.lede { font-size: 1.1rem; color: var(--muted); }
+.lede b { color: var(--fg); font-weight: 600; }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
+.limit { padding: 14px 16px; display: grid; gap: 2px; }
+.limit .v { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.limit .l { font-size: 0.82rem; color: var(--muted); }
+
+/* actor chips */
+.chip { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+.c-user { background: var(--user-soft); color: var(--user); }
+.c-admin { background: var(--admin-soft); color: var(--admin); }
+.c-sys { background: var(--sys-soft); color: var(--sys); }
+
+/* journey swimlanes */
+.lanes-head, .step { display: grid; grid-template-columns: 2.4rem repeat(3, minmax(0, 1fr)); gap: 0 12px; }
+.lanes-head { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.lanes-head span { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+.lanes-head .u { color: var(--user); grid-column: 2; }
+.lanes-head .a { color: var(--admin); grid-column: 3; }
+.lanes-head .s { color: var(--sys); grid-column: 4; }
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.step { counter-increment: s; padding: 10px 16px; border-top: 1px solid var(--line); align-items: start; }
+.step:first-child { border-top: 0; }
+.step::before { content: counter(s); font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); padding-top: 2px; }
+.step .box { border-radius: 8px; padding: 8px 12px; display: grid; gap: 2px; min-width: 0; }
+.step .box b { font-weight: 600; font-size: 0.92rem; }
+.step .box span { font-size: 0.82rem; color: var(--muted); }
+.step.u .box { grid-column: 2; background: var(--user-soft); }
+.step.a .box { grid-column: 3; background: var(--admin-soft); }
+.step.s .box { grid-column: 4; background: var(--sys-soft); }
+.step.u .box b { color: var(--user); }
+.step.a .box b { color: var(--admin); }
+.step.s .box b { color: var(--sys); }
+.branch { padding: 10px 16px 14px 56px; border-top: 1px dashed var(--line); font-size: 0.85rem; color: var(--muted); display: grid; gap: 4px; }
+@media (max-width: 680px) {
+  .lanes-head { display: none; }
+  .step { grid-template-columns: 2rem minmax(0, 1fr); }
+  .step.u .box, .step.a .box, .step.s .box { grid-column: 2; }
+  .step .box::before { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+  .step.u .box::before { content: "User"; color: var(--user); }
+  .step.a .box::before { content: "Admin"; color: var(--admin); }
+  .step.s .box::before { content: "System"; color: var(--sys); }
+  .branch { padding-left: 16px; }
+}
+
+/* rules */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.rule-group { padding: 16px; display: grid; gap: 10px; align-content: start; }
+.rule-group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rule-group li { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); gap: 8px; font-size: 0.9rem; }
+.rule-group li code { color: var(--muted); font-size: 0.75rem; padding-top: 2px; }
+
+/* diagrams */
+.diagram { padding: 16px; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; min-width: 760px; display: flex; justify-content: center; }
+
+/* stack table */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 600px; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+thead th { border-top: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+td:first-child { color: var(--muted); white-space: nowrap; }
+td b { font-weight: 600; }
+td.c { text-align: center; white-space: nowrap; }
+.y { color: var(--yes); font-weight: 600; }
+.n { color: var(--no); }
+
+/* two-up */
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.card { padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.9rem; }
+.tbl { display: grid; gap: 8px; }
+.tbl div { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 10px; font-size: 0.9rem; }
+.tbl code { font-size: 0.85rem; font-weight: 500; }
+
+/* milestones */
+.ms { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.ms li { padding: 14px; display: grid; gap: 6px; align-content: start; }
+.ms .id { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+.ms li:nth-child(2) { border-color: var(--sys); }
+.ms li p { font-size: 0.85rem; color: var(--muted); }
+.flag { font-size: 0.72rem; font-weight: 600; color: var(--sys); }
+
+.open { display: grid; gap: 8px; }
+.open div { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 0.92rem; }
+footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Phase 1 plan · genie.gluonforce.com</span>
+    <h1>Genie v2 Overview</h1>
+    <p class="lede"><b>Speak an idea, get a working web prototype.</b> A member of the public signs up with their email and describes the app they want out loud. Genie turns the recording into requirements, which the user approves. One of two admins reviews the request, the builder agent from internal Genie builds a Next.js prototype, an admin checks it, and the user gets a link by email.</p>
+    <div class="limits">
+      <div class="limit panel"><span class="v">1</span><span class="l">free prototype per email, ever</span></div>
+      <div class="limit panel"><span class="v">2</span><span class="l">remarks to refine requirements</span></div>
+      <div class="limit panel"><span class="v">10 min</span><span class="l">maximum recording</span></div>
+      <div class="limit panel"><span class="v">2</span><span class="l">human checks: requirements and QA</span></div>
+      <div class="limit panel"><span class="v">3 days</span><span class="l">a released link stays live</span></div>
+      <div class="limit panel"><span class="v">3</span><span class="l">database tables</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>How a prototype gets made</h2>
+    <p class="sub">Who acts at each step. The user only sees the steps in their own lane plus a "Building" status in between.</p>
+    <div class="panel">
+      <div class="lanes-head"><span class="u">User</span><span class="a">Admin</span><span class="s">System</span></div>
+      <ol class="steps">
+        <li class="step u"><div class="box"><b>Signs up with email</b><span>Clerk, email verified. IP recorded.</span></div></li>
+        <li class="step u"><div class="box"><b>Records the idea</b><span>Up to 10 min. Can play back and re-record freely.</span></div></li>
+        <li class="step s"><div class="box"><b>Transcribes and writes requirements</b><span>OpenRouter: speech-to-text, then the requirement agent.</span></div></li>
+        <li class="step u"><div class="box"><b>Reviews the summary</b><span>Up to 2 remarks to regenerate. Recording is now locked.</span></div></li>
+        <li class="step u"><div class="box"><b>Approves, or declines</b><span>Declining warns that the free prototype is used up and asks why.</span></div></li>
+        <li class="step a"><div class="box"><b>Accepts or rejects the requirements</b><span>Sees audio, transcript, versions, IP flag. Cannot edit.</span></div></li>
+        <li class="step s"><div class="box"><b>Builds and deploys a preview</b><span>Railway worker runs the builder agent in an E2B sandbox, exports a static site to Cloudflare.</span></div></li>
+        <li class="step a"><div class="box"><b>Checks the built prototype</b><span>Release, rebuild with a defect note, or decline.</span></div></li>
+        <li class="step s"><div class="box"><b>Emails the link</b><span>Sent to the sign-up email. Anyone with the link can open it.</span></div></li>
+        <li class="step s"><div class="box"><b>Expires the link after 3 days</b><span>Files are kept so a later redeploy needs no rebuild.</span></div></li>
+      </ol>
+      <div class="branch">
+        <span><span class="chip c-admin">Admin declines</span> at review or QA → user gets an email with the reason. The free prototype is used up.</span>
+        <span><span class="chip c-sys">Build fails</span> → one automatic retry, then admins are emailed and can retry. The user still sees "Building".</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Business rules</h2>
+    <div class="rules">
+      <div class="rule-group panel">
+        <h3>Quota and accounts</h3>
+        <ul>
+          <li><code>BR-1</code><span>One prototype per email, enforced by the database.</span></li>
+          <li><code>BR-2</code><span>Gmail dot and plus variants count as the same email. Disposable domains are refused.</span></li>
+          <li><code>BR-3</code><span>Deleting the account and signing up again does not reset the quota.</span></li>
+          <li><code>BR-7</code><span>IP is tracked. A shared IP flags the request for the admin; it never blocks.</span></li>
+        </ul>
+      </div>
+      <div class="rule-group panel">
+        <h3>Recording and requirements</h3>
+        <ul>
+          <li><code>BR-8</code><span>Recording runs 15 seconds to 10 minutes.</span></li>
+          <li><code>BR-5</code><span>Play back and re-record freely until Generate. Then the recording is locked.</span></li>
+          <li><code>BR-4</code><span>At most 2 remarks to regenerate the requirements.</span></li>
+          <li><code>BR-6</code><span>After that, approve or decline. Declining uses up the free prototype.</span></li>
+        </ul>
+      </div>
+      <div class="rule-group panel">
+        <h3>Review and delivery</h3>
+        <ul>
+          <li><code>BR-9</code><span>Nothing is built without an admin approving it.</span></li>
+          <li><code>BR-14</code><span>Admins accept or reject requirements as the user approved them, never edit them.</span></li>
+          <li><code>BR-11</code><span>The user sees nothing until an admin has checked the build and released it.</span></li>
+          <li><code>BR-12</code><span>Released links stay live for 3 days, then expire.</span></li>
+          <li><code>BR-13</code><span>No cost cap per build in Phase 1. Cost is recorded per build.</span></li>
+        </ul>
+      </div>
+      <div class="rule-group panel">
+        <h3>What a prototype may contain</h3>
+        <ul>
+          <li><code>Build</code><span>Frontend only: Next.js, data kept in the browser's localStorage, a mocked backend.</span></li>
+          <li><code>Build</code><span>No real backend, database, auth or calls to outside services. Same strict rules as internal Genie.</span></li>
+          <li><code>Build</code><span>Must pass lint, type check and a static export build.</span></li>
+          <li><code>Host</code><span>Served from its own subdomain on a separate domain, with outside network calls blocked.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>System architecture</h2>
+    <div class="panel diagram">
+<pre class="mermaid">
+flowchart LR
+    U[Public user] --> APP
+    A[Admins x2] --> APP
+    subgraph Vercel
+      APP[Next.js app<br/>recorder, dashboard, admin panel, API]
+    end
+    APP <--> CLERK[Clerk<br/>sign-in and roles]
+    APP <--> DB[(Supabase Postgres<br/>users, prototypes, events)]
+    APP <--> ST[(Supabase Storage<br/>audio, tarballs, logs)]
+    APP --> OR[OpenRouter<br/>speech-to-text, requirements]
+    APP --> MAIL[Resend email]
+    subgraph Railway
+      W[Build worker<br/>Python builder agent]
+    end
+    W <--> DB
+    W --> ST
+    W --> OR
+    W <--> E2B[E2B sandbox<br/>runs the generated code]
+    W --> R2[(Cloudflare R2<br/>static sites)]
+    W --> MAIL
+    V[Anyone with the link] --> CF[Cloudflare Worker<br/>slug.prototype domain]
+    CF --> R2
+</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Prototype status, from recording to expiry</h2>
+    <div class="panel diagram">
+<pre class="mermaid">
+stateDiagram-v2
+    direction LR
+    [*] --> recording
+    recording --> requirements_ready: Generate
+    requirements_ready --> requirements_ready: remark, max 2
+    requirements_ready --> pending_review: user approves
+    requirements_ready --> user_declined: user declines
+    pending_review --> approved: admin accepts
+    pending_review --> declined: admin rejects
+    approved --> building: worker picks up
+    building --> build_failed: fails after retry
+    build_failed --> building: admin retries
+    building --> awaiting_qa: preview ready
+    awaiting_qa --> building: admin rebuilds
+    awaiting_qa --> declined: admin declines
+    awaiting_qa --> released: admin releases
+    released --> expired: after 3 days
+    released --> offline: admin takes down
+    offline --> released: admin restores
+</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Technology choices</h2>
+    <div class="panel table-wrap">
+      <table>
+        <thead><tr><th>Concern</th><th>Choice</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>App and API</td><td><b>Next.js on Vercel</b></td><td>Recorder, user dashboard and admin panel in one app</td></tr>
+          <tr><td>Sign-in and roles</td><td><b>Clerk</b></td><td>Email sign-up; <code>admin</code> role set by hand for two employees</td></tr>
+          <tr><td>Database</td><td><b>Supabase Postgres</b></td><td>Three tables, constraints enforce the quota and remark limit</td></tr>
+          <tr><td>Files</td><td><b>Supabase Storage</b></td><td>Audio, source and site tarballs, build logs, kept out of the database</td></tr>
+          <tr><td>Speech and requirements</td><td><b>OpenRouter</b></td><td>Same models and prompt approach as internal Genie</td></tr>
+          <tr><td>Builder agent</td><td><b>Python worker on Railway</b></td><td>Reuses the internal pydantic-ai agent; company has Railway credit</td></tr>
+          <tr><td>Build sandbox</td><td><b>E2B</b></td><td>Generated code runs isolated, API keys stay outside it</td></tr>
+          <tr><td>Prototype hosting</td><td><b>Cloudflare R2 + Worker</b></td><td>Static sites, near-zero cost, instant takedown and expiry</td></tr>
+          <tr><td>Email</td><td><b>Resend</b></td><td>Received, declined, ready-for-QA and ready emails</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Data and permissions</h2>
+    <div class="two">
+      <div class="card panel">
+        <h3>Three tables</h3>
+        <div class="tbl">
+          <div><code>users</code><span>Who someone is. The normalised email is the quota key; the role is a copy of Clerk's.</span></div>
+          <div><code>prototypes</code><span>Where each prototype stands now: status, transcript, requirements, decision, build, link, expiry.</span></div>
+          <div><code>events</code><span>Everything that happened: who, in which role, what, when, from which IP.</span></div>
+        </div>
+        <p class="sub" style="font-size:0.85rem">Full columns and the event list are in the <a href="https://claude.ai/artifact/SXc9ynUnPVq5w4fzpBSim1">Genie v2 Data Model</a> page.</p>
+      </div>
+      <div class="card panel">
+        <h3>Who can do what</h3>
+        <table style="min-width:0">
+          <thead><tr><th>Action</th><th>User</th><th>Admin</th></tr></thead>
+          <tbody>
+            <tr><td style="white-space:normal;color:var(--fg)">Record, remark, approve or decline own request</td><td class="c y">Own</td><td class="c n">No</td></tr>
+            <tr><td style="white-space:normal;color:var(--fg)">Review queue, audio, transcript, IP flags</td><td class="c n">No</td><td class="c y">Yes</td></tr>
+            <tr><td style="white-space:normal;color:var(--fg)">Accept or reject requirements</td><td class="c n">No</td><td class="c y">Yes</td></tr>
+            <tr><td style="white-space:normal;color:var(--fg)">Release, rebuild, take offline</td><td class="c n">No</td><td class="c y">Yes</td></tr>
+          </tbody>
+        </table>
+        <p class="sub" style="font-size:0.85rem">Clerk decides the role. Routes check it, and the database backs up the limits.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Delivery plan</h2>
+    <ol class="ms">
+      <li class="panel"><span class="id">M0</span><h3>Foundations</h3><p>Repo, Clerk roles, Supabase schema, Resend, domains.</p></li>
+      <li class="panel"><span class="id">M1</span><h3>Builder in the cloud</h3><p>Agent in E2B, static export, R2 and Cloudflare Worker, end to end from fixed requirements.</p><span class="flag">Riskiest part, do first</span></li>
+      <li class="panel"><span class="id">M2</span><h3>Capture</h3><p>Recorder, transcription, requirement agent, remarks, approve or decline, quota and IP rules.</p></li>
+      <li class="panel"><span class="id">M3</span><h3>Admin panel</h3><p>Queue, review, build view, preview and QA release, retry, takedown, event timeline.</p></li>
+      <li class="panel"><span class="id">M4</span><h3>Hardening</h3><p>Emails, 3-day expiry, rate limits, monitoring, privacy terms, test run of about 20 builds.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Later and still open</h2>
+    <div class="two">
+      <div class="card panel">
+        <h3>Planned after Phase 1</h3>
+        <ul>
+          <li>Paid version with more than one prototype per account</li>
+          <li>Redeploy an expired prototype after signing in</li>
+          <li>Pricing, per-build cost caps and tuned limits from recorded costs</li>
+          <li>An auto-review agent that learns from admin decisions</li>
+          <li>Updating a delivered prototype with the internal update agent</li>
+        </ul>
+      </div>
+      <div class="card panel">
+        <h3>Still to decide</h3>
+        <div class="open">
+          <div><span class="chip c-sys">Deferred</span><span>The prototype domain. A separate <code>.app</code> domain; <code>genie.app</code> is taken.</span></div>
+          <div><span class="chip c-sys">Open</span><span>Whether to log admins viewing a user's audio or transcript.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Source documents: <code>Genie_v2/docs/requirements.md</code> and <code>Genie_v2/docs/architecture.md</code>.</footer>
+</div>

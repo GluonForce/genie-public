@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin: decline a request</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Onest:wght@400;500;700&display=swap">
+<style>
+body{margin:0;font-family:Onest,system-ui,sans-serif;color:#101B4D;background:#4A4F73}
+a{color:#101B4D}a:hover{color:#C22A1B}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #4A4F73; color: #101B4D; font-family: Onest, system-ui, sans-serif; font-size: 16px; line-height: 1.5; padding: 56px 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+
+<form role="dialog" aria-labelledby="ad-title" style="width: 100%; max-width: 560px; background: #FFFFFF; border-radius: 28px; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 id="ad-title" style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 24px; line-height: 1.2; letter-spacing: -0.02em">Decline "Supplier invoice approvals"?</h1>
+<p style="margin: 0; color: #4A5278">Nothing will be built and alex@example.com will be emailed. The user's free prototype stays used. This cannot be undone.</p>
+</div>
+
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 8px">
+<legend style="padding: 0; margin-bottom: 10px; font-size: 15px; font-weight: 700">Category</legend>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 16px; border: 2px solid #C9CCDA; border-radius: 14px; cursor: pointer"><input type="radio" name="cat" style="width: 18px; height: 18px; accent-color: #101B4D">Unclear, cannot tell what to build</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 16px; border: 2px solid #101B4D; border-radius: 14px; background: #FFECE8; cursor: pointer; font-weight: 700"><input type="radio" name="cat" checked style="width: 18px; height: 18px; accent-color: #101B4D">Out of scope for a front-end prototype</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 16px; border: 2px solid #C9CCDA; border-radius: 14px; cursor: pointer"><input type="radio" name="cat" style="width: 18px; height: 18px; accent-color: #101B4D">Abusive or against the acceptable use policy</label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 16px; border: 2px solid #C9CCDA; border-radius: 14px; cursor: pointer"><input type="radio" name="cat" style="width: 18px; height: 18px; accent-color: #101B4D">Duplicate account or request</label>
+</fieldset>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="ad-reason" style="font-size: 15px; font-weight: 700">Reason shown to the user <span style="font-weight: 400; color: #A31F12">(required)</span></label>
+<textarea id="ad-reason" rows="4" style="box-sizing: border-box; width: 100%; padding: 14px 16px; border: 2px solid #101B4D; border-radius: 14px; font-family: inherit; font-size: 16px; color: #101B4D; resize: vertical">The idea depends on connecting to your accounting software and your bank to pay invoices. A Genie prototype cannot connect to outside services, so the result would not show what you described.</textarea>
+<p style="margin: 0; font-size: 14px; color: #4A5278">The user sees this text on their status page and in the email. Write it for them.</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<a href="AdminReview.dc.html" style="flex: 1 1 160px; text-align: center; background: #FFFFFF; color: #101B4D; text-decoration: none; padding: 14px 22px; border-radius: 999px; font-weight: 700; font-size: 17px; border: 2px solid #101B4D">Cancel</a>
+<a href="AdminQueue.dc.html" style="flex: 1 1 160px; text-align: center; background: #A31F12; color: #FFFFFF; text-decoration: none; padding: 16px 22px; border-radius: 999px; font-weight: 700; font-size: 17px">Decline request</a>
+</div>
+</form>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

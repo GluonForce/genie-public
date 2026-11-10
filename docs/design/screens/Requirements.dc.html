@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review your requirements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Onest:wght@400;500;700&display=swap">
+<style>
+body{margin:0;font-family:Onest,system-ui,sans-serif;color:#101B4D;background:#FFECE8}
+a{color:#101B4D}a:hover{color:#C22A1B}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #FFECE8; color: #101B4D; font-family: Onest, system-ui, sans-serif; font-size: 17px; line-height: 1.5; display: flex; flex-direction: column">
+
+<header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 32px">
+<a href="Main.dc.html" style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; color: #101B4D">genie</a>
+<div style="display: flex; align-items: center; gap: 18px; font-size: 15px"><span>alex@example.com</span><a href="Main.dc.html" style="padding: 12px 0">Sign out</a></div>
+</header>
+
+<ol aria-label="Progress" style="list-style: none; margin: 0 auto; padding: 8px 24px 0; max-width: 1168px; width: 100%; box-sizing: border-box; display: flex; gap: 6px; font-size: 14px; font-weight: 700">
+<li style="flex: 1; border-top: 6px solid #FF4B3A; padding-top: 8px">1 Record</li>
+<li style="flex: 1; border-top: 6px solid #101B4D; padding-top: 8px">2 Requirements</li>
+<li style="flex: 1; border-top: 6px solid #FFFFFF; padding-top: 8px; color: #4A5278">3 Team review</li>
+<li style="flex: 1; border-top: 6px solid #FFFFFF; padding-top: 8px; color: #4A5278">4 Prototype</li>
+</ol>
+
+<main style="flex: 1; max-width: 1168px; width: 100%; margin: 0 auto; padding: 32px 24px 56px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px">
+
+<article style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border-radius: 28px; padding: 36px; box-sizing: border-box; display: flex; flex-direction: column; gap: 30px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; color: #4A5278">Version 2 of 3, updated after your first change request</p>
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 34px; line-height: 1.12; letter-spacing: -0.02em">Supplier invoice approvals</h1>
+<p style="margin: 0; font-size: 19px">An approval tracker for supplier invoices. Team members submit invoices, managers approve or reject them, and finance sees what is ready to pay.</p>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">What you want to achieve</h2>
+<p style="margin: 0; color: #4A5278">Stop approving invoices over email. Give managers one queue and give finance a clear list of what is ready to pay.</p>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 700">What the prototype will do</h2>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<li style="display: flex; gap: 18px; padding: 14px 0; border-top: 4px solid #101B4D"><span style="flex: none; width: 24px; font-family: Unbounded, sans-serif; font-weight: 800">1</span><span>Show a list of invoices with supplier, amount, due date and status.</span></li>
+<li style="display: flex; gap: 18px; padding: 14px 0; border-top: 2px solid #C9CCDA"><span style="flex: none; width: 24px; font-family: Unbounded, sans-serif; font-weight: 800">2</span><span>Let a team member add an invoice with supplier, amount, due date and a note.</span></li>
+<li style="display: flex; gap: 18px; padding: 14px 0; border-top: 2px solid #C9CCDA"><span style="flex: none; width: 24px; font-family: Unbounded, sans-serif; font-weight: 800">3</span><span>Let a manager approve or reject an invoice and leave a comment.</span></li>
+<li style="display: flex; gap: 18px; padding: 14px 0; border-top: 2px solid #C9CCDA"><span style="flex: none; width: 24px; font-family: Unbounded, sans-serif; font-weight: 800">4</span><span>Give finance a "ready to pay" view that lists approved invoices.</span></li>
+<li style="display: flex; gap: 18px; padding: 14px 0; border-top: 2px solid #C9CCDA"><span style="flex: none; width: 24px; font-family: Unbounded, sans-serif; font-weight: 800">5</span><span>Filter the list by status and by supplier.</span></li>
+<li style="display: flex; gap: 18px; padding: 14px 16px; margin: 0 -16px; background: #FFECE8; border-radius: 14px"><span style="flex: none; width: 24px; font-family: Unbounded, sans-serif; font-weight: 800">6</span><span>Highlight invoices that are due within 7 days. <strong>Added from your change request.</strong></span></li>
+</ol>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">User stories</h2>
+<ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; color: #4A5278">
+<li>As a team member, I want to submit an invoice so that it does not get lost in email.</li>
+<li>As a manager, I want to see what is waiting for me so that nothing is paid late.</li>
+<li>As a manager, I want to reject an invoice with a comment so that the submitter knows what to fix.</li>
+<li>As finance, I want a list of approved invoices so that I know what to pay.</li>
+</ul>
+</section>
+
+<p style="margin: 0; padding-top: 20px; border-top: 2px solid #C9CCDA; font-size: 15px; color: #4A5278">The prototype runs in the browser and imitates a backend. Invoices are saved on the device that enters them. Real payments, accounting software and user accounts are not included.</p>
+</article>
+
+<aside style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+<section style="background: #FFFFFF; border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Something missing?</h2>
+<div style="display: flex; gap: 6px; font-size: 14px; font-weight: 700">
+<span style="flex: 1; border-top: 6px solid #FF4B3A; padding-top: 6px">Change 1 used</span>
+<span style="flex: 1; border-top: 6px solid #C9CCDA; padding-top: 6px">Change 2 left</span>
+</div>
+</div>
+<label for="remark" style="color: #4A5278">Describe what to change and Genie rewrites the requirements.</label>
+<textarea id="remark" rows="4" placeholder="For example: managers should see the total amount waiting for approval." style="box-sizing: border-box; width: 100%; padding: 14px 16px; border: 2px solid #101B4D; border-radius: 14px; font-family: inherit; font-size: 16px; color: #101B4D; resize: vertical"></textarea>
+<button type="button" style="background: #FFFFFF; color: #101B4D; padding: 14px 24px; border-radius: 999px; font-weight: 700; font-size: 17px; border: 2px solid #101B4D; font-family: inherit; cursor: pointer">Update requirements</button>
+<div style="border-top: 2px solid #C9CCDA; padding-top: 14px; display: flex; flex-direction: column; gap: 4px; font-size: 15px">
+<div style="font-weight: 700">Your first change request</div>
+<p style="margin: 0; color: #4A5278">"Flag invoices that are due within a week."</p>
+</div>
+</section>
+
+<section style="background: #101B4D; color: #FFFFFF; border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Happy with this?</h2>
+<p style="margin: 0; color: #C9CCDA">Approving sends these requirements to our team for review. They cannot be changed afterwards.</p>
+<a href="StatusReview.dc.html" style="text-align: center; background: #FFFFFF; color: #101B4D; text-decoration: none; padding: 16px 24px; border-radius: 999px; font-weight: 700; font-size: 18px">Approve and send for review</a>
+<a href="DeclineDialog.dc.html" style="text-align: center; color: #FFFFFF; padding: 12px 0; font-weight: 700">Decline these requirements</a>
+</section>
+
+</aside>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1400}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

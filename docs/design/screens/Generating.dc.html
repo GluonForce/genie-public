@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Generating requirements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Onest:wght@400;500;700&display=swap">
+<style>
+body{margin:0;font-family:Onest,system-ui,sans-serif;color:#101B4D;background:#FFECE8}
+a{color:#101B4D}a:hover{color:#C22A1B}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #FFECE8; color: #101B4D; font-family: Onest, system-ui, sans-serif; font-size: 17px; line-height: 1.5; display: flex; flex-direction: column">
+
+<header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 32px">
+<a href="Main.dc.html" style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; color: #101B4D">genie</a>
+<div style="display: flex; align-items: center; gap: 18px; font-size: 15px"><span>alex@example.com</span><a href="Main.dc.html" style="padding: 12px 0">Sign out</a></div>
+</header>
+
+<ol aria-label="Progress" style="list-style: none; margin: 0 auto; padding: 8px 24px 0; max-width: 688px; width: 100%; box-sizing: border-box; display: flex; gap: 6px; font-size: 14px; font-weight: 700">
+<li style="flex: 1; border-top: 6px solid #FF4B3A; padding-top: 8px">1 Record</li>
+<li style="flex: 1; border-top: 6px solid #101B4D; padding-top: 8px">2 Requirements</li>
+<li style="flex: 1; border-top: 6px solid #FFFFFF; padding-top: 8px; color: #4A5278">3 Team review</li>
+<li style="flex: 1; border-top: 6px solid #FFFFFF; padding-top: 8px; color: #4A5278">4 Prototype</li>
+</ol>
+
+<main style="flex: 1; max-width: 688px; width: 100%; margin: 0 auto; padding: 32px 24px 56px; box-sizing: border-box">
+<section style="background: #FFFFFF; border-radius: 28px; padding: 36px; display: flex; flex-direction: column; gap: 28px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 30px; line-height: 1.15">Writing your requirements</h1>
+<p style="margin: 0; color: #4A5278">This usually takes under a minute. Keep this page open.</p>
+</div>
+
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<li style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 16px 0 16px 18px; border-left: 6px solid #FF4B3A"><span style="font-weight: 700">Recording uploaded</span><span style="color: #4A5278">3 min 12 s</span></li>
+<li style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 16px 0 16px 18px; border-left: 6px solid #FF4B3A"><span style="font-weight: 700">Speech turned into text</span><span style="color: #4A5278">Done</span></li>
+<li style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0 16px 18px; border-left: 6px solid #101B4D; background: #FFECE8; border-radius: 0 14px 14px 0; padding-right: 18px"><span style="font-weight: 700">Working out the requirements</span>
+<span aria-hidden="true" style="height: 28px; width: 72px; display: flex; align-items: center; gap: 4px"><i style="flex: 1; height: 40%; background: #101B4D; border-radius: 2px"></i><i style="flex: 1; height: 90%; background: #101B4D; border-radius: 2px"></i><i style="flex: 1; height: 60%; background: #101B4D; border-radius: 2px"></i><i style="flex: 1; height: 100%; background: #101B4D; border-radius: 2px"></i><i style="flex: 1; height: 50%; background: #101B4D; border-radius: 2px"></i><i style="flex: 1; height: 75%; background: #101B4D; border-radius: 2px"></i><i style="flex: 1; height: 30%; background: #101B4D; border-radius: 2px"></i></span></li>
+<li style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 16px 0 16px 18px; border-left: 6px solid #C9CCDA; color: #4A5278"><span style="font-weight: 700">Ready for you to read</span><span>Next</span></li>
+</ol>
+
+<a href="Requirements.dc.html" style="align-self: flex-start; font-size: 15px; padding: 12px 0">Design preview only: skip to the result</a>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

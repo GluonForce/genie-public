@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify your email</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Onest:wght@400;500;700&display=swap">
+<style>
+body{margin:0;font-family:Onest,system-ui,sans-serif;color:#101B4D;background:#FFECE8}
+a{color:#101B4D}a:hover{color:#C22A1B}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #FFECE8; color: #101B4D; font-family: Onest, system-ui, sans-serif; font-size: 17px; line-height: 1.5; display: flex; flex-direction: column">
+
+<header style="padding: 18px 32px">
+<a href="Main.dc.html" style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; color: #101B4D">genie</a>
+</header>
+
+<main style="flex: 1; padding: 56px 24px; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center">
+<form style="width: 100%; max-width: 480px; background: #FFFFFF; border-radius: 28px; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 26px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.15">Check your email</h1>
+<p style="margin: 0; color: #4A5278">We sent a 6-digit code to <strong style="color: #101B4D">alex@example.com</strong>. It works for 10 minutes.</p>
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0; min-width: 0">
+<legend style="padding: 0; margin-bottom: 10px; font-size: 15px; font-weight: 700">Verification code</legend>
+<div style="display: flex; gap: 8px">
+<input aria-label="Digit 1" inputmode="numeric" maxlength="1" value="4" style="flex: 1 1 0; width: 0; min-width: 0; height: 64px; box-sizing: border-box; text-align: center; border: 2px solid #C9CCDA; border-radius: 14px; font-family: Unbounded, sans-serif; font-size: 24px; font-weight: 800; color: #101B4D">
+<input aria-label="Digit 2" inputmode="numeric" maxlength="1" value="8" style="flex: 1 1 0; width: 0; min-width: 0; height: 64px; box-sizing: border-box; text-align: center; border: 2px solid #C9CCDA; border-radius: 14px; font-family: Unbounded, sans-serif; font-size: 24px; font-weight: 800; color: #101B4D">
+<input aria-label="Digit 3" inputmode="numeric" maxlength="1" value="1" style="flex: 1 1 0; width: 0; min-width: 0; height: 64px; box-sizing: border-box; text-align: center; border: 2px solid #C9CCDA; border-radius: 14px; font-family: Unbounded, sans-serif; font-size: 24px; font-weight: 800; color: #101B4D">
+<input aria-label="Digit 4" inputmode="numeric" maxlength="1" style="flex: 1 1 0; width: 0; min-width: 0; height: 64px; box-sizing: border-box; text-align: center; border: 3px solid #FF4B3A; border-radius: 14px; font-family: Unbounded, sans-serif; font-size: 24px; font-weight: 800; color: #101B4D">
+<input aria-label="Digit 5" inputmode="numeric" maxlength="1" style="flex: 1 1 0; width: 0; min-width: 0; height: 64px; box-sizing: border-box; text-align: center; border: 2px solid #C9CCDA; border-radius: 14px; font-family: Unbounded, sans-serif; font-size: 24px; font-weight: 800; color: #101B4D">
+<input aria-label="Digit 6" inputmode="numeric" maxlength="1" style="flex: 1 1 0; width: 0; min-width: 0; height: 64px; box-sizing: border-box; text-align: center; border: 2px solid #C9CCDA; border-radius: 14px; font-family: Unbounded, sans-serif; font-size: 24px; font-weight: 800; color: #101B4D">
+</div>
+</fieldset>
+<a href="Record.dc.html" style="text-align: center; background: #101B4D; color: #FFFFFF; text-decoration: none; padding: 17px 28px; border-radius: 999px; font-weight: 700; font-size: 18px">Verify email</a>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px">
+<a href="#" style="padding: 12px 0">Send a new code</a>
+<a href="SignUp.dc.html" style="padding: 12px 0">Use a different email</a>
+</div>
+</form>
+</main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

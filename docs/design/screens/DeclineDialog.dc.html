@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decline the requirements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Onest:wght@400;500;700&display=swap">
+<style>
+body{margin:0;font-family:Onest,system-ui,sans-serif;color:#101B4D;background:#4A4F73}
+a{color:#101B4D}a:hover{color:#C22A1B}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #4A4F73; color: #101B4D; font-family: Onest, system-ui, sans-serif; font-size: 17px; line-height: 1.5; padding: 56px 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+
+<form role="dialog" aria-labelledby="dd-title" style="width: 100%; max-width: 560px; background: #FFFFFF; border-radius: 28px; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+<div aria-hidden="true" style="height: 40px; display: flex; align-items: center; gap: 5px">
+<i style="flex: 1; height: 100%; background: #FF4B3A; border-radius: 3px"></i><i style="flex: 1; height: 70%; background: #FF4B3A; border-radius: 3px"></i><i style="flex: 1; height: 85%; background: #FF4B3A; border-radius: 3px"></i><i style="flex: 1; height: 50%; background: #FF4B3A; border-radius: 3px"></i><i style="flex: 1; height: 60%; background: #FF4B3A; border-radius: 3px"></i><i style="flex: 1; height: 30%; background: #FF4B3A; border-radius: 3px"></i><i style="flex: none; width: 4px; height: 100%; background: #101B4D"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i><i style="flex: 1; height: 8%; background: #C9CCDA; border-radius: 3px"></i>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 id="dd-title" style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 28px; line-height: 1.15">Decline and stop here?</h1>
+<p style="margin: 0">This cannot be undone. If you decline:</p>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<li style="padding: 10px 0; border-top: 2px solid #C9CCDA">No prototype will be built.</li>
+<li style="padding: 10px 0; border-top: 2px solid #C9CCDA">You cannot generate the requirements again.</li>
+<li style="padding: 10px 0; border-top: 2px solid #C9CCDA; border-bottom: 2px solid #C9CCDA; font-weight: 700">Your one free prototype is used up.</li>
+</ul>
+</div>
+<p style="margin: 0; background: #FFECE8; border-radius: 14px; padding: 14px 18px; font-size: 16px">You still have 1 change request left. If the requirements are close, go back and tell Genie what to change.</p>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="dd-reason" style="font-size: 15px; font-weight: 700">Why do you not want to continue? <span style="font-weight: 400; color: #4A5278">(optional)</span></label>
+<textarea id="dd-reason" rows="4" placeholder="Your answer helps us improve Genie." style="box-sizing: border-box; width: 100%; padding: 14px 16px; border: 2px solid #101B4D; border-radius: 14px; font-family: inherit; font-size: 16px; color: #101B4D; resize: vertical"></textarea>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<a href="Requirements.dc.html" style="flex: 1 1 200px; text-align: center; background: #101B4D; color: #FFFFFF; text-decoration: none; padding: 16px 24px; border-radius: 999px; font-weight: 700; font-size: 17px">Go back to the requirements</a>
+<a href="StatusClosed.dc.html" style="flex: 1 1 200px; text-align: center; background: #FFFFFF; color: #A31F12; text-decoration: none; padding: 14px 24px; border-radius: 999px; font-weight: 700; font-size: 17px; border: 2px solid #A31F12">Decline and use my free prototype</a>
+</div>
+</form>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

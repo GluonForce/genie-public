@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin: review requirements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Onest:wght@400;500;700&display=swap">
+<style>
+body{margin:0;font-family:Onest,system-ui,sans-serif;color:#101B4D;background:#F4F5FA}
+a{color:#101B4D}a:hover{color:#C22A1B}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #F4F5FA; color: #101B4D; font-family: Onest, system-ui, sans-serif; font-size: 16px; line-height: 1.5; display: flex; flex-direction: column">
+
+<header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; padding: 10px 32px; background: #FFFFFF; border-bottom: 4px solid #101B4D">
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 32px">
+<a href="AdminQueue.dc.html" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #101B4D"><span style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 20px">genie</span><span style="background: #101B4D; color: #FFFFFF; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px">Admin</span></a>
+<nav style="display: flex; gap: 24px; font-weight: 700">
+<a href="AdminQueue.dc.html" style="text-decoration: none; padding: 12px 0; border-bottom: 4px solid #FF4B3A">Queue</a>
+<a href="AdminRecord.dc.html" style="text-decoration: none; padding: 12px 0; font-weight: 500">All prototypes</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 18px; font-size: 15px"><span>sam@gluonforce.com</span><a href="Main.dc.html" style="padding: 12px 0">Sign out</a></div>
+</header>
+
+<main style="flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 20px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+
+<a href="AdminQueue.dc.html" style="align-self: flex-start; padding: 10px 0; font-weight: 700">Back to queue</a>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em">Supplier invoice approvals</h1>
+<span style="background: #FFE9B8; color: #5C3600; font-size: 14px; font-weight: 700; padding: 5px 12px; border-radius: 999px">Pending approval</span>
+</div>
+<p style="margin: 0; color: #4A5278">Submitted by alex@example.com on 10 Nov 2026 at 09:42. Waiting 3 h 10 min.</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px">
+
+<article style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 26px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div role="tablist" aria-label="Requirement versions" style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" role="tab" aria-selected="false" style="height: 44px; padding: 0 18px; background: #FFFFFF; color: #101B4D; border: 2px solid #C9CCDA; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Version 1</button>
+<button type="button" role="tab" aria-selected="true" style="height: 44px; padding: 0 18px; background: #101B4D; color: #FFFFFF; border: 2px solid #101B4D; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Version 2, approved by the user</button>
+</div>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#101B4D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>Read only, exactly as the user approved</span>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Summary</h2>
+<p style="margin: 0; color: #4A5278">An approval tracker for supplier invoices. Team members submit invoices, managers approve or reject them, and finance sees what is ready to pay.</p>
+</section>
+<section style="display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Intent</h2>
+<p style="margin: 0; color: #4A5278">Stop approving invoices over email. Give managers one queue and give finance a clear list of what is ready to pay.</p>
+</section>
+<section style="display: flex; flex-direction: column">
+<h2 style="margin: 0 0 10px; font-size: 18px; font-weight: 700">Functional requirements</h2>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<li style="display: flex; gap: 16px; padding: 12px 0; border-top: 4px solid #101B4D"><span style="flex: none; width: 22px; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 15px">1</span><span>Show a list of invoices with supplier, amount, due date and status.</span></li>
+<li style="display: flex; gap: 16px; padding: 12px 0; border-top: 2px solid #E6E9F7"><span style="flex: none; width: 22px; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 15px">2</span><span>Let a team member add an invoice with supplier, amount, due date and a note.</span></li>
+<li style="display: flex; gap: 16px; padding: 12px 0; border-top: 2px solid #E6E9F7"><span style="flex: none; width: 22px; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 15px">3</span><span>Let a manager approve or reject an invoice and leave a comment.</span></li>
+<li style="display: flex; gap: 16px; padding: 12px 0; border-top: 2px solid #E6E9F7"><span style="flex: none; width: 22px; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 15px">4</span><span>Give finance a "ready to pay" view that lists approved invoices.</span></li>
+<li style="display: flex; gap: 16px; padding: 12px 0; border-top: 2px solid #E6E9F7"><span style="flex: none; width: 22px; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 15px">5</span><span>Filter the list by status and by supplier.</span></li>
+<li style="display: flex; gap: 16px; padding: 12px 0; border-top: 2px solid #E6E9F7"><span style="flex: none; width: 22px; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 15px">6</span><span>Highlight invoices that are due within 7 days.</span></li>
+</ol>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">User stories</h2>
+<ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; color: #4A5278">
+<li>As a team member, I want to submit an invoice so that it does not get lost in email.</li>
+<li>As a manager, I want to see what is waiting for me so that nothing is paid late.</li>
+<li>As a manager, I want to reject an invoice with a comment so that the submitter knows what to fix.</li>
+<li>As finance, I want a list of approved invoices so that I know what to pay.</li>
+</ul>
+</section>
+<section style="border-top: 2px solid #E6E9F7; padding-top: 20px; display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Change requests from the user</h2>
+<p style="margin: 0; color: #4A5278"><strong style="color: #101B4D">Change 1 (version 1 to 2):</strong> "Flag invoices that are due within a week."</p>
+<p style="margin: 0; font-size: 14px; color: #4A5278">1 of 2 change requests used.</p>
+</section>
+</article>
+
+<aside style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+<section style="background: #101B4D; color: #FFFFFF; border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Decision</h2>
+<p style="margin: 0; font-size: 15px; color: #C9CCDA">Accepting starts the build straight away. The requirements cannot be edited.</p>
+<a href="AdminQueue.dc.html" style="text-align: center; background: #FFFFFF; color: #101B4D; text-decoration: none; padding: 15px 22px; border-radius: 999px; font-weight: 700; font-size: 17px">Accept and start build</a>
+<a href="AdminDecline.dc.html" style="text-align: center; background: #101B4D; color: #FFFFFF; text-decoration: none; padding: 13px 22px; border-radius: 999px; font-weight: 700; font-size: 17px; border: 2px solid #FFFFFF">Decline</a>
+</section>
+
+<section style="background: #FFFFFF; border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Recording</h2>
+<div style="display: flex; align-items: center; gap: 14px">
+<button type="button" aria-label="Play recording" style="flex: none; width: 52px; height: 52px; border-radius: 50%; background: #101B4D; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20"><path d="M6 3.5v13l11-6.5z" fill="#FFFFFF"/></svg></button>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<div aria-hidden="true" style="height: 44px; display: flex; align-items: center; gap: 3px">
+<i style="flex: 1; height: 22%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 48%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 80%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 56%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 100%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 66%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 38%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 74%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 90%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 52%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 44%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 70%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 30%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 60%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 84%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 46%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 24%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 62%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 40%; background: #FFC9C1; border-radius: 2px"></i><i style="flex: 1; height: 18%; background: #FFC9C1; border-radius: 2px"></i>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 14px; color: #4A5278"><span>00:00</span><span>03:12</span></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-weight: 700">Transcript</div>
+<p style="margin: 0; max-height: 136px; overflow-y: auto; font-size: 15px; color: #4A5278">Our team approves supplier invoices over email and they get lost. Someone forwards a PDF, the manager replies "fine", and finance has to dig through threads to find out what they are allowed to pay. I want one place where a manager sees the invoices waiting, approves or rejects each one with a comment, and finance sees what is ready to pay…</p>
+</div>
+</section>
+
+<section style="background: #FFFFFF; border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">User</h2>
+<dl style="margin: 0; display: flex; flex-direction: column; font-size: 15px">
+<div style="display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 2px solid #E6E9F7"><dt style="color: #4A5278">Email</dt><dd style="margin: 0; text-align: right">alex@example.com</dd></div>
+<div style="display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 2px solid #E6E9F7"><dt style="color: #4A5278">Signed up</dt><dd style="margin: 0; text-align: right">10 Nov 2026, 09:18</dd></div>
+<div style="display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 2px solid #E6E9F7"><dt style="color: #4A5278">IP address</dt><dd style="margin: 0; text-align: right">203.0.113.24</dd></div>
+<div style="display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 2px solid #E6E9F7"><dt style="color: #4A5278">Other accounts on this IP</dt><dd style="margin: 0; text-align: right">None</dd></div>
+</dl>
+<p style="margin: 0; font-size: 14px; color: #4A5278">When an IP address is shared, the other accounts are listed here so you can judge whether it is the same person. It never blocks a request by itself.</p>
+</section>
+
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1400}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

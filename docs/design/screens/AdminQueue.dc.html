@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin queue</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Onest:wght@400;500;700&display=swap">
+<style>
+body{margin:0;font-family:Onest,system-ui,sans-serif;color:#101B4D;background:#F4F5FA}
+a{color:#101B4D}a:hover{color:#C22A1B}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #F4F5FA; color: #101B4D; font-family: Onest, system-ui, sans-serif; font-size: 16px; line-height: 1.5; display: flex; flex-direction: column">
+
+<header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; padding: 10px 32px; background: #FFFFFF; border-bottom: 4px solid #101B4D">
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 32px">
+<a href="AdminQueue.dc.html" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #101B4D"><span style="font-family: Unbounded, sans-serif; font-weight: 800; font-size: 20px">genie</span><span style="background: #101B4D; color: #FFFFFF; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px">Admin</span></a>
+<nav style="display: flex; gap: 24px; font-weight: 700">
+<a href="AdminQueue.dc.html" style="text-decoration: none; padding: 12px 0; border-bottom: 4px solid #FF4B3A">Queue</a>
+<a href="AdminRecord.dc.html" style="text-decoration: none; padding: 12px 0; font-weight: 500">All prototypes</a>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 18px; font-size: 15px"><span>sam@gluonforce.com</span><a href="Main.dc.html" style="padding: 12px 0">Sign out</a></div>
+</header>
+
+<main style="flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 32px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.02em">Queue</h1>
+<p style="margin: 0; color: #4A5278">Requests waiting for a decision, oldest first.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="q-search" style="font-size: 14px; font-weight: 700">Search</label>
+<input id="q-search" type="search" placeholder="Email, title or link name" style="width: 300px; max-width: 100%; height: 48px; box-sizing: border-box; padding: 0 16px; border: 2px solid #101B4D; border-radius: 14px; font-family: inherit; font-size: 16px; background: #FFFFFF; color: #101B4D">
+</div>
+</div>
+
+<div role="tablist" aria-label="Request status" style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" role="tab" aria-selected="true" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; background: #101B4D; color: #FFFFFF; border: 2px solid #101B4D; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Pending approval<span style="background: #FF4B3A; color: #101B4D; font-size: 13px; padding: 1px 9px; border-radius: 999px">4</span></button>
+<button type="button" role="tab" aria-selected="false" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; background: #FFFFFF; color: #101B4D; border: 2px solid #C9CCDA; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Building<span style="background: #E6E9F7; font-size: 13px; padding: 1px 9px; border-radius: 999px">1</span></button>
+<button type="button" role="tab" aria-selected="false" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; background: #FFFFFF; color: #101B4D; border: 2px solid #C9CCDA; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Ready for QA<span style="background: #FFE9B8; color: #5C3600; font-size: 13px; padding: 1px 9px; border-radius: 999px">2</span></button>
+<button type="button" role="tab" aria-selected="false" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; background: #FFFFFF; color: #101B4D; border: 2px solid #C9CCDA; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Build failed<span style="background: #FFDAD5; color: #8A1A0E; font-size: 13px; padding: 1px 9px; border-radius: 999px">1</span></button>
+<button type="button" role="tab" aria-selected="false" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; background: #FFFFFF; color: #101B4D; border: 2px solid #C9CCDA; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Live<span style="background: #E6E9F7; font-size: 13px; padding: 1px 9px; border-radius: 999px">6</span></button>
+<button type="button" role="tab" aria-selected="false" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; background: #FFFFFF; color: #101B4D; border: 2px solid #C9CCDA; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Closed<span style="background: #E6E9F7; font-size: 13px; padding: 1px 9px; border-radius: 999px">9</span></button>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 20px; overflow-x: auto">
+<table style="width: 100%; min-width: 880px; border-collapse: collapse; text-align: left">
+<thead>
+<tr style="font-size: 14px">
+<th scope="col" style="padding: 16px 24px; font-weight: 700; border-bottom: 4px solid #101B4D">Prototype</th>
+<th scope="col" style="padding: 16px 24px; font-weight: 700; border-bottom: 4px solid #101B4D">User</th>
+<th scope="col" style="padding: 16px 24px; font-weight: 700; border-bottom: 4px solid #101B4D">Waiting</th>
+<th scope="col" style="padding: 16px 24px; font-weight: 700; border-bottom: 4px solid #101B4D">Changes used</th>
+<th scope="col" style="padding: 16px 24px; font-weight: 700; border-bottom: 4px solid #101B4D">Flags</th>
+<th scope="col" style="padding: 16px 24px; font-weight: 700; border-bottom: 4px solid #101B4D"><span style="position: absolute; left: -9999px">Action</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7"><div style="font-weight: 700">Supplier invoice approvals</div><div style="font-size: 14px; color: #4A5278">Recording 3 min 12 s</div></td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">alex@example.com</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">3 h 10 min</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">1 of 2</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7; color: #4A5278">None</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7; text-align: right"><a href="AdminReview.dc.html" style="display: inline-block; background: #101B4D; color: #FFFFFF; text-decoration: none; padding: 11px 22px; border-radius: 999px; font-weight: 700">Review</a></td>
+</tr>
+<tr>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7"><div style="font-weight: 700">Employee onboarding checklist</div><div style="font-size: 14px; color: #4A5278">Recording 1 min 48 s</div></td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">mira@example.org</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">2 h 02 min</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">0 of 2</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7"><span style="display: inline-block; background: #FFE9B8; color: #5C3600; font-size: 14px; font-weight: 700; padding: 4px 12px; border-radius: 999px">IP shared with 2 accounts</span></td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7; text-align: right"><a href="AdminReview.dc.html" style="display: inline-block; background: #101B4D; color: #FFFFFF; text-decoration: none; padding: 11px 22px; border-radius: 999px; font-weight: 700">Review</a></td>
+</tr>
+<tr>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7"><div style="font-weight: 700">Field service job scheduler</div><div style="font-size: 14px; color: #4A5278">Recording 6 min 30 s</div></td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">jon@example.net</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">1 h 44 min</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7">2 of 2</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7; color: #4A5278">None</td>
+<td style="padding: 16px 24px; border-bottom: 2px solid #E6E9F7; text-align: right"><a href="AdminReview.dc.html" style="display: inline-block; background: #101B4D; color: #FFFFFF; text-decoration: none; padding: 11px 22px; border-radius: 999px; font-weight: 700">Review</a></td>
+</tr>
+<tr>
+<td style="padding: 16px 24px"><div style="font-weight: 700">Meeting room booking</div><div style="font-size: 14px; color: #4A5278">Recording 0 min 52 s</div></td>
+<td style="padding: 16px 24px">lena@example.com</td>
+<td style="padding: 16px 24px">22 min</td>
+<td style="padding: 16px 24px">0 of 2</td>
+<td style="padding: 16px 24px; color: #4A5278">None</td>
+<td style="padding: 16px 24px; text-align: right"><a href="AdminReview.dc.html" style="display: inline-block; background: #101B4D; color: #FFFFFF; text-decoration: none; padding: 11px 22px; border-radius: 999px; font-weight: 700">Review</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<a href="AdminQA.dc.html" style="flex: 1 1 340px; min-width: 0; background: #FFFFFF; border-radius: 20px; border-left: 6px solid #FF4B3A; padding: 20px 24px; text-decoration: none; color: #101B4D; display: flex; align-items: center; justify-content: space-between; gap: 16px">
+<span><span style="display: block; font-weight: 700">2 prototypes are built and waiting for QA</span><span style="display: block; font-size: 15px; color: #4A5278">Users are not emailed until you release them.</span></span>
+<span style="font-weight: 700; white-space: nowrap; text-decoration: underline">Open QA</span>
+</a>
+<a href="AdminRecord.dc.html" style="flex: 1 1 340px; min-width: 0; background: #FFFFFF; border-radius: 20px; border-left: 6px solid #A31F12; padding: 20px 24px; text-decoration: none; color: #101B4D; display: flex; align-items: center; justify-content: space-between; gap: 16px">
+<span><span style="display: block; font-weight: 700">1 build failed</span><span style="display: block; font-size: 15px; color: #4A5278">Read the log, then retry the build or decline.</span></span>
+<span style="font-weight: 700; white-space: nowrap; text-decoration: underline">View</span>
+</a>
+</div>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Genie v2 Data Model</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column (~1040px) — overview strip, diagram, three table cards, event catalogue, journey list, permission matrix */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #17202b;
+  --muted: #5b6676;
+  --line: #dde2e9;
+  --core: #0f766e;        /* users + prototypes */
+  --core-soft: #e3f3f1;
+  --child: #9a5b13;       /* events */
+  --child-soft: #f8eedf;
+  --clerk: #4f46e5;       /* identity / Clerk */
+  --clerk-soft: #ecebfd;
+  --yes: #15803d;
+  --no: #a1a9b5;
+  --font-display: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --surface: #182029; --fg: #e6eaf0; --muted: #98a3b3; --line: #2a3441;
+    --core: #4fd1c0; --core-soft: #12302d; --child: #e5a862; --child-soft: #33261a;
+    --clerk: #a5a1ff; --clerk-soft: #24234a; --yes: #4ade80; --no: #5d6775;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #182029; --fg: #e6eaf0; --muted: #98a3b3; --line: #2a3441;
+  --core: #4fd1c0; --core-soft: #12302d; --child: #e5a862; --child-soft: #33261a;
+  --clerk: #a5a1ff; --clerk-soft: #24234a; --yes: #4ade80; --no: #5d6775;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+}
+.wrap {
+  max-width: 1040px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+  display: grid; gap: 48px;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+h1 { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; font-weight: 650; }
+h3 { font-size: 1rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+.eyebrow { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+section { display: grid; gap: 16px; min-width: 0; }
+header { display: grid; gap: 12px; }
+.lede { color: var(--muted); font-size: 1.05rem; }
+
+.where { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.place { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.place .tag { justify-self: start; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.place ul { margin: 0; padding-left: 18px; color: var(--muted); }
+.t-clerk { background: var(--clerk-soft); color: var(--clerk); }
+.t-core { background: var(--core-soft); color: var(--core); }
+.t-child { background: var(--child-soft); color: var(--child); }
+
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; min-width: 640px; display: flex; justify-content: center; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; color: var(--muted); font-size: 0.85rem; }
+.legend b { font-family: var(--font-mono); font-weight: 500; color: var(--fg); }
+
+.tables { display: grid; gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.card-head .name { font-family: var(--font-mono); font-size: 1rem; font-weight: 500; }
+.card.core .card-head { border-top: 3px solid var(--core); }
+.card.child .card-head { border-top: 3px solid var(--child); }
+.card-head .tag { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.card-head .what { color: var(--muted); font-size: 0.9rem; flex-basis: 100%; }
+.card-body { padding: 12px 16px 16px; display: grid; gap: 12px; }
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 20px; }
+.group h4 { margin: 0 0 4px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.cols { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.cols li { font-family: var(--font-mono); font-size: 0.8rem; display: flex; gap: 8px; justify-content: space-between; min-width: 0; }
+.cols li span:first-child { overflow-wrap: anywhere; }
+.cols .k { color: var(--muted); text-align: right; }
+.cols .k.pk { color: var(--core); }
+.cols .k.fk { color: var(--clerk); }
+.cols .k.ck { color: var(--child); }
+.note { font-size: 0.85rem; color: var(--muted); }
+
+.catalogue-wrap, .matrix-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+thead th { border-top: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+td.area { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+td .chip + .chip { margin-left: 4px; }
+td.c { text-align: center; white-space: nowrap; }
+.y { color: var(--yes); font-weight: 600; }
+.n { color: var(--no); }
+
+.journey { list-style: none; margin: 0; padding: 0; display: grid; counter-reset: step; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.journey li { counter-increment: step; display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) minmax(0, 1.3fr); gap: 4px 16px; padding: 12px 16px; border-top: 1px solid var(--line); align-items: baseline; }
+.journey li:first-child { border-top: 0; }
+.journey li::before { content: counter(step); font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); }
+.journey .who { display: block; font-size: 0.75rem; color: var(--muted); }
+.journey .writes { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--font-mono); font-size: 0.74rem; padding: 1px 7px; border-radius: 5px; white-space: nowrap; display: inline-block; }
+.chip.core { background: var(--core-soft); color: var(--core); }
+.chip.child { background: var(--child-soft); color: var(--child); }
+@media (max-width: 640px) {
+  .journey li { grid-template-columns: 2rem minmax(0, 1fr); }
+  .journey .writes { grid-column: 2; }
+}
+
+.layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.layer { border-left: 3px solid var(--line); padding: 4px 0 4px 12px; display: grid; gap: 4px; }
+.layer p { color: var(--muted); font-size: 0.9rem; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Genie v2 · Phase 1 · Supabase Postgres</span>
+    <h1>Genie v2 Data Model</h1>
+    <p class="lede">Three tables. <b>users</b> says who someone is, <b>prototypes</b> says where each prototype stands right now, and <b>events</b> records everything that has happened. Clerk, not the database, decides who is an admin.</p>
+  </header>
+
+  <section>
+    <h2>Where each piece of data lives</h2>
+    <div class="where">
+      <div class="place">
+        <span class="tag t-clerk">Clerk</span>
+        <h3>Identity and permissions</h3>
+        <ul>
+          <li>Sign-up, sign-in, email verification</li>
+          <li><code>publicMetadata.role = "admin"</code> for the two employees</li>
+          <li>Role travels in the session token, and the app checks it on every admin route</li>
+        </ul>
+      </div>
+      <div class="place">
+        <span class="tag t-core">Supabase Postgres</span>
+        <h3>Three tables</h3>
+        <ul>
+          <li><code>users</code> and <code>prototypes</code> hold the current state</li>
+          <li><code>events</code> holds the full history</li>
+          <li>A copy of each user's role, for display only</li>
+        </ul>
+      </div>
+      <div class="place">
+        <span class="tag t-child">Files</span>
+        <h3>Storage and hosting</h3>
+        <ul>
+          <li>Supabase Storage: audio chunks, source tarball, static-site tarball, build logs</li>
+          <li>Cloudflare R2: the live static site each prototype link serves</li>
+          <li>The database stores only paths to these files</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Relationships</h2>
+    <div class="diagram">
+<pre class="mermaid">
+erDiagram
+    users ||--o| prototypes : "owns, max 1 in Phase 1"
+    users ||--o{ events : "actor or subject"
+    prototypes ||--o{ events : "timeline"
+
+    users {
+        uuid id PK
+        text clerk_user_id UK
+        text email
+        text email_normalized UK "quota key"
+        text role "Clerk copy"
+        inet signup_ip
+        timestamptz deleted_at
+    }
+    prototypes {
+        uuid id PK
+        uuid user_id FK,UK "one per email"
+        text slug UK
+        prototype_status status
+        text transcript
+        jsonb requirements
+        int revision_count "0 to 2"
+        boolean ip_flagged
+        uuid reviewed_by FK
+        int build_attempts
+        numeric build_cost_usd
+        text site_url
+        timestamptz expires_at
+    }
+    events {
+        bigint id PK
+        timestamptz created_at
+        uuid actor_id FK "null = system"
+        actor_role actor_role
+        uuid user_id FK
+        uuid prototype_id FK
+        text action
+        prototype_status to_status
+        inet ip
+        jsonb details
+    }
+</pre>
+    </div>
+    <div class="legend">
+      <span><b>||--o|</b> one to zero-or-one</span>
+      <span><b>||--o{</b> one to many</span>
+      <span><b>PK</b> primary key</span>
+      <span><b>FK</b> points to another table</span>
+      <span><b>UK</b> must be unique</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>The tables</h2>
+    <div class="tables">
+
+      <article class="card core">
+        <div class="card-head">
+          <span class="name">users</span><span class="tag t-core">who</span>
+          <span class="what">One row per person. A Clerk webhook creates it. When someone deletes their Clerk account the row stays, with <code>deleted_at</code> set, so signing up again with the same email does not grant another free prototype.</span>
+        </div>
+        <div class="card-body">
+          <div class="groups">
+            <div class="group"><h4>Identity</h4><ul class="cols">
+              <li><span>id</span><span class="k pk">PK</span></li>
+              <li><span>clerk_user_id</span><span class="k">unique</span></li>
+              <li><span>email</span><span class="k"></span></li>
+              <li><span>email_normalized</span><span class="k ck">unique · quota key</span></li>
+            </ul></div>
+            <div class="group"><h4>Role and dates</h4><ul class="cols">
+              <li><span>role</span><span class="k">copy of Clerk</span></li>
+              <li><span>signup_ip</span><span class="k"></span></li>
+              <li><span>created_at</span><span class="k"></span></li>
+              <li><span>deleted_at</span><span class="k"></span></li>
+            </ul></div>
+          </div>
+          <p class="note">The app reads <code>role</code> here only to show badges and filter lists. Permission checks use the Clerk session.</p>
+        </div>
+      </article>
+
+      <article class="card core">
+        <div class="card-head">
+          <span class="name">prototypes</span><span class="tag t-core">where it stands now</span>
+          <span class="what">One row is one prototype, from the first recording to expiry. It always shows the current state. The user dashboard, the admin queue and the build worker all read from it. Rows with status <code>approved</code> are the build queue.</span>
+        </div>
+        <div class="card-body">
+          <div class="groups">
+            <div class="group"><h4>Identity</h4><ul class="cols">
+              <li><span>id</span><span class="k pk">PK</span></li>
+              <li><span>user_id</span><span class="k fk">→ users · unique</span></li>
+              <li><span>slug</span><span class="k">to-do-list-k3x9</span></li>
+              <li><span>title</span><span class="k"></span></li>
+            </ul></div>
+            <div class="group"><h4>Lifecycle</h4><ul class="cols">
+              <li><span>status</span><span class="k">12 states</span></li>
+              <li><span>status_changed_at</span><span class="k"></span></li>
+              <li><span>created_at · updated_at</span><span class="k"></span></li>
+            </ul></div>
+            <div class="group"><h4>Recording</h4><ul class="cols">
+              <li><span>audio_chunk_count</span><span class="k">files in Storage</span></li>
+              <li><span>recording_duration_ms</span><span class="k"></span></li>
+              <li><span>transcript</span><span class="k"></span></li>
+              <li><span>recording_locked_at</span><span class="k">Generate pressed</span></li>
+            </ul></div>
+            <div class="group"><h4>Requirements</h4><ul class="cols">
+              <li><span>requirements</span><span class="k">jsonb · current</span></li>
+              <li><span>revision_count</span><span class="k ck">check 0–2</span></li>
+              <li><span>submitted_at</span><span class="k">locked here</span></li>
+              <li><span>ip_flagged</span><span class="k"></span></li>
+              <li><span>user_decline_reason</span><span class="k">optional</span></li>
+            </ul></div>
+            <div class="group"><h4>Admin decision</h4><ul class="cols">
+              <li><span>reviewed_by</span><span class="k fk">→ users</span></li>
+              <li><span>reviewed_at</span><span class="k"></span></li>
+              <li><span>decision_category</span><span class="k"></span></li>
+              <li><span>decision_reason</span><span class="k">shown to user</span></li>
+            </ul></div>
+            <div class="group"><h4>Build</h4><ul class="cols">
+              <li><span>build_attempts</span><span class="k"></span></li>
+              <li><span>build_note</span><span class="k">QA defect note</span></li>
+              <li><span>build_claimed_by · build_heartbeat_at</span><span class="k">worker</span></li>
+              <li><span>build_cost_usd</span><span class="k">total</span></li>
+              <li><span>source_path · site_path</span><span class="k">Storage</span></li>
+            </ul></div>
+            <div class="group"><h4>Delivery</h4><ul class="cols">
+              <li><span>site_url</span><span class="k"></span></li>
+              <li><span>released_by</span><span class="k fk">→ users</span></li>
+              <li><span>released_at</span><span class="k"></span></li>
+              <li><span>expires_at</span><span class="k">release + 3 days</span></li>
+            </ul></div>
+          </div>
+          <p class="note">No role column here. A prototype always belongs to a regular user. Who acted on it, and in which role, goes in <code>events</code>.</p>
+        </div>
+      </article>
+
+      <article class="card child">
+        <div class="card-head">
+          <span class="name">events</span><span class="tag t-child">everything that happened</span>
+          <span class="what">One row per action by a user, an admin or the system. Requirement versions and remarks, IP sightings, each build attempt with its cost, every decision and release live here. Filter by <code>prototype_id</code> for a prototype's timeline, by <code>user_id</code> for an account's history, or by <code>ip</code> for the IP flag.</span>
+        </div>
+        <div class="card-body">
+          <div class="groups">
+            <div class="group"><h4>When and who</h4><ul class="cols">
+              <li><span>id</span><span class="k pk">PK</span></li>
+              <li><span>created_at</span><span class="k"></span></li>
+              <li><span>actor_id</span><span class="k fk">→ users · null = system</span></li>
+              <li><span>actor_role</span><span class="k">user · admin · system</span></li>
+            </ul></div>
+            <div class="group"><h4>About what</h4><ul class="cols">
+              <li><span>user_id</span><span class="k fk">→ users</span></li>
+              <li><span>prototype_id</span><span class="k fk">→ prototypes · optional</span></li>
+              <li><span>action</span><span class="k">see catalogue</span></li>
+              <li><span>from_status · to_status</span><span class="k">status changes</span></li>
+            </ul></div>
+            <div class="group"><h4>Context</h4><ul class="cols">
+              <li><span>ip</span><span class="k">indexed</span></li>
+              <li><span>reason</span><span class="k">decline text, notes</span></li>
+              <li><span>details</span><span class="k">jsonb</span></li>
+            </ul></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>What gets logged in events</h2>
+    <div class="catalogue-wrap">
+      <table>
+        <thead><tr><th>Area</th><th>Action</th><th>By</th><th>Extra data saved</th></tr></thead>
+        <tbody>
+          <tr><td class="area">Account</td><td><span class="chip child">signup</span></td><td>user</td><td>IP</td></tr>
+          <tr><td class="area"></td><td><span class="chip child">role_changed</span><span class="chip child">account_deleted</span></td><td>system</td><td>Old and new role</td></tr>
+          <tr><td class="area">Recording</td><td><span class="chip child">recording_started</span><span class="chip child">recording_discarded</span></td><td>user</td><td>IP</td></tr>
+          <tr><td class="area">Requirements</td><td><span class="chip child">requirements_generated</span></td><td>user</td><td>Version 1 of the requirements, model used</td></tr>
+          <tr><td class="area"></td><td><span class="chip child">requirements_revised</span></td><td>user</td><td>The remark and the new version</td></tr>
+          <tr><td class="area"></td><td><span class="chip child">submitted</span><span class="chip child">user_declined</span></td><td>user</td><td>IP and accounts sharing it; decline reason</td></tr>
+          <tr><td class="area">Review</td><td><span class="chip child">approved</span><span class="chip child">declined</span></td><td>admin</td><td>Reason and category</td></tr>
+          <tr><td class="area">Build</td><td><span class="chip child">build_started</span><span class="chip child">build_succeeded</span><span class="chip child">build_failed</span></td><td>system</td><td>Attempt, model, tokens, cost, log file, error</td></tr>
+          <tr><td class="area"></td><td><span class="chip child">build_retried</span><span class="chip child">rebuild_requested</span></td><td>admin</td><td>Defect note</td></tr>
+          <tr><td class="area">Delivery</td><td><span class="chip child">qa_ready</span><span class="chip child">released</span><span class="chip child">expired</span></td><td>system / admin</td><td></td></tr>
+          <tr><td class="area"></td><td><span class="chip child">taken_offline</span><span class="chip child">restored</span></td><td>admin</td><td>Reason</td></tr>
+          <tr><td class="area">Security</td><td><span class="chip child">blocked_attempt</span></td><td>user</td><td>What was refused, e.g. a third remark or a non-admin on /admin</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The build agent's step-by-step work (files written, pnpm runs) goes to a log file in Storage, linked from the build events, because one build can produce hundreds of steps.</p>
+  </section>
+
+  <section>
+    <h2>One prototype's path through the tables</h2>
+    <ol class="journey">
+      <li><div>Signs up<span class="who">User · Clerk webhook</span></div><div class="writes"><span class="chip core">users</span><span class="chip child">signup</span></div></li>
+      <li><div>Records, plays back, maybe re-records<span class="who">User</span></div><div class="writes"><span class="chip core">prototypes · recording</span><span class="chip child">recording_started</span></div></li>
+      <li><div>Presses Generate<span class="who">User</span></div><div class="writes"><span class="chip core">transcript · requirements</span><span class="chip child">requirements_generated</span></div></li>
+      <li><div>Adds up to 2 remarks<span class="who">User</span></div><div class="writes"><span class="chip core">requirements · revision_count</span><span class="chip child">requirements_revised</span></div></li>
+      <li><div>Approves, or declines with a reason<span class="who">User</span></div><div class="writes"><span class="chip core">pending_review / user_declined</span><span class="chip child">submitted / user_declined</span></div></li>
+      <li><div>Accepts or rejects the requirements<span class="who">Admin</span></div><div class="writes"><span class="chip core">approved / declined</span><span class="chip child">approved / declined</span></div></li>
+      <li><div>Builds in E2B, uploads preview<span class="who">Worker</span></div><div class="writes"><span class="chip core">building → awaiting_qa</span><span class="chip child">build_started · build_succeeded · qa_ready</span></div></li>
+      <li><div>QA: release, rebuild or decline<span class="who">Admin</span></div><div class="writes"><span class="chip core">released · site_url · expires_at</span><span class="chip child">released</span></div></li>
+      <li><div>Link expires after 3 days<span class="who">Worker</span></div><div class="writes"><span class="chip core">expired</span><span class="chip child">expired</span></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Who can do what</h2>
+    <div class="matrix-wrap">
+      <table>
+        <thead><tr><th>Action</th><th>User (owner)</th><th>Admin</th></tr></thead>
+        <tbody>
+          <tr><td>Record, re-record, generate, 2 remarks, approve or decline own requirements</td><td class="c y">Own only</td><td class="c n">No</td></tr>
+          <tr><td>See prototype status and link</td><td class="c y">Own only</td><td class="c y">All</td></tr>
+          <tr><td>View queue, transcript, audio, IP flags, event timeline</td><td class="c n">No</td><td class="c y">Yes</td></tr>
+          <tr><td>Accept or reject requirements (no editing)</td><td class="c n">No</td><td class="c y">Yes</td></tr>
+          <tr><td>Preview, release, rebuild, decline at QA</td><td class="c n">No</td><td class="c y">Yes</td></tr>
+          <tr><td>Retry failed build, take offline, restore, download source</td><td class="c n">No</td><td class="c y">Yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="layers">
+      <div class="layer"><h3>1 · Clerk middleware</h3><p><code>/admin</code> and <code>/api/admin</code> need role <code>admin</code> in the session token. Everyone else gets a 404.</p></div>
+      <div class="layer"><h3>2 · API routes</h3><p>Ownership and current status are checked in the same database update, and the event is written in the same transaction.</p></div>
+      <div class="layer"><h3>3 · Database</h3><p>Unique and check constraints are the last line: one prototype per email, at most 2 remarks. Browsers have no direct database access.</p></div>
+    </div>
+  </section>
+</div>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="/_runtime/mermaid-11.16.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>

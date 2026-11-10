@@ -86,7 +86,7 @@ Sign up (email) → Record → [Play back / re-record] → Generate requirements
 ### 5.1 Authentication & accounts
 | ID | Requirement |
 |---|---|
-| FR-A1 | Users sign up / sign in with email (Clerk; email verification required before recording). |
+| FR-A1 | Users sign up / sign in through Clerk with **Google** or a **6-digit code sent by email**. There are no passwords. |
 | FR-A2 | On first authenticated request the app creates a `users` row with normalised email and sign-up IP. |
 | FR-A3 | Admin routes (`/admin/**`) and admin APIs are accessible only to users with role `admin`; others get 404. |
 | FR-A4 | A user who has already submitted sees their request status instead of the recorder. |
@@ -203,4 +203,4 @@ Phase 1 is designed to collect the data an auto-reviewer needs:
 | Q5 | Should the user be able to add a typed note alongside the recording? | No. |
 | Q6 | Languages other than English? | English only (as internal). |
 
-Resolved: user decline uses up the free prototype (BR-6, FR-G7); admins can't edit requirements (BR-14); slug format `{kebab-title}-{4–6 random chars}`, e.g. `to-do-list-k3x9`; two admin checks, requirements review and QA before release (BR-9, BR-11); sign-in is passwordless with an emailed 6-digit code (FR-A1, see design).
+Resolved: user decline uses up the free prototype (BR-6, FR-G7); admins can't edit requirements (BR-14); slug format `{kebab-title}-{4–6 random chars}`, e.g. `to-do-list-k3x9`; two admin checks, requirements review and QA before release (BR-9, BR-11); sign-in is Google or an emailed 6-digit code, with no passwords (FR-A1).

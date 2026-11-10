@@ -85,7 +85,7 @@ Each task lists where the work lives and how we know it is done.
 | M0.2 | Migration `0001`: enums, `users`, `prototypes`, `events`, indexes, RLS on with no policies; private Storage buckets `audio`, `sources`, `sites`, `logs` | `supabase/migrations` | `supabase db reset` builds the schema locally; anon key can read nothing |
 | M0.3 | Email normalisation (lower-case; Gmail/Googlemail dots and `+tag` removed) with unit tests | `apps/web/lib/email.ts` | Tests cover Gmail variants, other domains, upper case |
 | M0.4 | Clerk webhook `/api/webhooks/clerk` (verified with Svix): `user.created` creates or relinks the `users` row by normalised email and logs `signup`; `user.updated` syncs email and role copy (`role_changed`); `user.deleted` sets `deleted_at` and clears `clerk_user_id` | `apps/web/app/api/webhooks/clerk` | See rule below; events rows written |
-| M0.5 | Clerk middleware: `/app/**` needs a signed-in user; `/admin/**` and `/api/admin/**` need `metadata.role === "admin"`, otherwise 404 | `apps/web/middleware.ts` | A user gets 404 on `/admin`; an admin sees the shell |
+| M0.5 | Access checks in layouts and route handlers, not in `proxy.ts` (Clerk and Next.js both advise against path-based checks there): `/app/**` needs a signed-in user; `/admin/**` and `/api/admin/**` need `metadata.role === "admin"`, otherwise 404. Helpers in `lib/auth.ts` | `apps/web/lib/auth.ts`, `app/app/layout.tsx`, `app/admin/layout.tsx` | A user gets 404 on `/admin`; an admin sees the shell |
 | M0.6 | Design system: Tailwind theme tokens, fonts, components (Button, Input, Card, Pill, Dialog, Wave, ProgressTrack, AppHeader, AdminHeader, Footer) | `apps/web/components` | A `/dev/components` page (dev only) shows every component |
 | M0.7 | Landing page, sign-up and verify-code screens wired to Clerk | `apps/web/app/(marketing)`, `app/(auth)` | Sign-up with a real email reaches `/app`; layout holds at 360px width |
 | M0.8 | `GET /api/me`: returns account and prototype status; records sign-up IP on first call (FR-A2) | `apps/web/app/api/me` | IP stored once, from `x-forwarded-for` |
@@ -162,7 +162,7 @@ Each task lists where the work lives and how we know it is done.
 |---|---|
 | M5.1 | Production Supabase, Clerk, Vercel, Railway, E2B, R2 and KV set up from `.env.example`; secrets only in each platform's settings |
 | M5.2 | DNS: `genie.gluonforce.com` to Vercel; prototype domain wildcard to the Worker; Resend domain verified |
-| M5.3 | Set the two admins' Clerk role to `admin` |
+| M5.3 | Set the two admins' Clerk role to `admin`; confirm the session token template reads `{{user.public_metadata}}`; set `authorizedParties: ["https://genie.gluonforce.com"]` in `clerkMiddleware`; create Google OAuth credentials for Clerk's production instance |
 | M5.4 | Runbook in `docs/runbook.md`: retry a stuck build, take a prototype offline, rotate keys, restore from backup |
 | M5.5 | Production smoke test with a real recording, then soft launch to a small invited group before going public |
 
@@ -213,6 +213,7 @@ Every acceptance criterion (requirements §7) gets at least one automated or wri
 
 - Code merged with CI green; new logic has tests.
 - Status changes go through the conditional update and write an `events` row.
+- Every page, route handler and server action checks access itself with `requireUser()` or `requireAdmin()` from `lib/auth.ts`. Layout checks are only for the header and redirects, because layouts don't re-run on every navigation.
 - No secret in the browser bundle, the sandbox or the repo.
 - UI matches the design at desktop and 360px width; keyboard reachable.
 - `.env.example` and docs updated if setup changed.

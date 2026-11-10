@@ -1,0 +1,7 @@
+packages:
+  - apps/web
+  - infra/*
+
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

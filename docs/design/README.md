@@ -11,8 +11,8 @@ Final UI design for Phase 1 (style 8, "One long track"), agreed on 2026-11-10. C
 | File | Screen | App route (planned) | Requirements |
 |---|---|---|---|
 | `Main.dc.html` | Landing page, with plans and footer | `/` | §1 goals, plans in §8 |
-| `SignUp.dc.html` | 1 · Sign up (email, no password) | `/sign-up`, `/sign-in` | FR-A1, BR-2 |
-| `VerifyEmail.dc.html` | 2 · 6-digit email code | `/sign-up/verify` | FR-A1 |
+| `SignUp.dc.html` | 1 · Sign up (no password). Built with Clerk's `<SignUp />` styled to match, which also offers Google. | `/sign-up`, `/sign-in` | FR-A1, BR-2 |
+| `VerifyEmail.dc.html` | 2 · 6-digit email code (Clerk's own code step, styled) | `/sign-up/verify-email-address` | FR-A1 |
 | `Record.dc.html` | 3 · Recording | `/app/record` | FR-R1–R3, FR-R5 |
 | `RecordReview.dc.html` | 4 · Play back, record again or generate | `/app/record` | FR-R4, BR-5 |
 | `Generating.dc.html` | 5 · Generating requirements | `/app/requirements` (pending) | FR-G1, FR-G2 |

@@ -1,0 +1,46 @@
+/* Clerk's styles sit below Tailwind's utilities so our classes can restyle its forms */
+@layer theme, base, clerk, components, utilities;
+@import "tailwindcss";
+
+/* Design tokens from docs/design/README.md */
+@theme {
+  --color-navy: #101b4d;
+  --color-coral: #ff4b3a;
+  --color-coral-soft: #ffc9c1;
+  --color-blush: #ffece8;
+  --color-ink-muted: #4a5278;
+  --color-rule: #c9ccda;
+  --color-rule-blush: #e8bdb6;
+}
+
+@theme inline {
+  --font-display: var(--font-unbounded);
+  --font-sans: var(--font-onest);
+}
+
+/* In the base layer so Tailwind utilities on a link can override them */
+@layer base {
+  body {
+    background: #ffffff;
+    color: var(--color-navy);
+  }
+
+  a:hover {
+    color: #c22a1b;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-coral);
+    outline-offset: 3px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}

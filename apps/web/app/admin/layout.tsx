@@ -1,11 +1,15 @@
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { AccountExists } from "@/components/account-exists";
 import { SignOutButton } from "@/components/sign-out-button";
 import { requireAdmin } from "@/lib/auth";
+import { ensureUser } from "@/lib/users";
 
 // Admin panel (design screens A1 to A5). Non-admins get a 404, so the area stays hidden.
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  await requireAdmin();
+  const session = await requireAdmin();
+  // Creates the Supabase row on the first visit after sign-up
+  const account = await ensureUser(session);
   const user = await currentUser();
 
   return (
@@ -22,7 +26,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           <SignOutButton />
         </div>
       </header>
-      {children}
+      {account.status === "email_taken" ? <AccountExists /> : children}
     </div>
   );
 }

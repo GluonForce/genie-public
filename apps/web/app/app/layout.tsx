@@ -1,11 +1,18 @@
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { AccountExists } from "@/components/account-exists";
 import { SignOutButton } from "@/components/sign-out-button";
 import { requireUser } from "@/lib/auth";
+import { ensureUser } from "@/lib/users";
 
 // The signed-in user area (design screens 3 to 10).
 export default async function UserAreaLayout({ children }: LayoutProps<"/app">) {
-  await requireUser();
+  const session = await requireUser();
+  // Sign-in always lands on /app; admins work in the admin panel instead
+  if (session.role === "admin") redirect("/admin");
+  // Creates the Supabase row on the first visit after sign-up
+  const account = await ensureUser(session);
   const user = await currentUser();
 
   return (
@@ -19,7 +26,7 @@ export default async function UserAreaLayout({ children }: LayoutProps<"/app">) 
           <SignOutButton />
         </div>
       </header>
-      {children}
+      {account.status === "email_taken" ? <AccountExists /> : children}
     </div>
   );
 }

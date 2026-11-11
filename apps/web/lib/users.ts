@@ -9,20 +9,18 @@ import { normalizeEmail } from "@/lib/email";
 
 export type User = typeof users.$inferSelect;
 
-export type EnsureUserResult =
-  | { status: "ok"; user: User }
-  // Another active account already uses this normalised email (BR-1 to BR-3)
-  | { status: "email_taken" };
-
 /**
  * Makes sure the signed-in Clerk user has a row in `users`. On the first visit
  * after sign-up it creates the row and logs a `signup` event with the visitor's
- * IP (FR-A2). If the email belongs to a deleted account, that row is relinked
- * so the used quota comes back with it.
+ * IP (FR-A2).
+ *
+ * If a row with the same email already exists, it belonged to an earlier Clerk
+ * account (Clerk never allows two accounts with one email), so it is relinked
+ * and the used quota comes back with it (BR-3).
  */
-export async function ensureUser(session: SessionUser): Promise<EnsureUserResult> {
+export async function ensureUser(session: SessionUser): Promise<User> {
   const existing = await findByClerkId(session.userId);
-  if (existing) return { status: "ok", user: existing };
+  if (existing) return existing;
 
   const clerkUser = await currentUser();
   const email = clerkUser?.primaryEmailAddress?.emailAddress;
@@ -37,21 +35,18 @@ export async function ensureUser(session: SessionUser): Promise<EnsureUserResult
       .from(users)
       .where(eq(users.emailNormalized, emailNormalized));
 
-    let row: User | undefined;
-    if (!sameEmail) {
-      // onConflictDoNothing: a parallel request may have created the row first
-      [row] = await tx
-        .insert(users)
-        .values({ clerkUserId: session.userId, email, emailNormalized, role: session.role, signupIp: ip })
-        .onConflictDoNothing()
-        .returning();
-    } else if (sameEmail.deletedAt) {
-      [row] = await tx
-        .update(users)
-        .set({ clerkUserId: session.userId, email, role: session.role, deletedAt: null })
-        .where(eq(users.id, sameEmail.id))
-        .returning();
-    }
+    // onConflictDoNothing: a parallel request may have created the row first
+    const [row] = sameEmail
+      ? await tx
+          .update(users)
+          .set({ clerkUserId: session.userId, email, role: session.role, deletedAt: null })
+          .where(eq(users.id, sameEmail.id))
+          .returning()
+      : await tx
+          .insert(users)
+          .values({ clerkUserId: session.userId, email, emailNormalized, role: session.role, signupIp: ip })
+          .onConflictDoNothing()
+          .returning();
     if (!row) return undefined;
 
     await tx.insert(events).values({
@@ -64,13 +59,12 @@ export async function ensureUser(session: SessionUser): Promise<EnsureUserResult
     });
     return row;
   });
+  if (user) return user;
 
-  if (user) return { status: "ok", user };
-
-  // Nothing was written: either a parallel request created our row, or the
-  // email belongs to another active account.
+  // Nothing was written because a parallel request created the row first
   const createdMeanwhile = await findByClerkId(session.userId);
-  return createdMeanwhile ? { status: "ok", user: createdMeanwhile } : { status: "email_taken" };
+  if (!createdMeanwhile) throw new Error(`Could not create a users row for ${session.userId}`);
+  return createdMeanwhile;
 }
 
 async function findByClerkId(clerkUserId: string): Promise<User | undefined> {

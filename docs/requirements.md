@@ -65,7 +65,7 @@ Sign up (email) → Record → [Play back / re-record] → Generate requirements
 | ID | Rule |
 |---|---|
 | BR-1 | Each **email** may have at most **one** prototype request ever submitted. Enforced in the database, not just the UI. |
-| BR-2 | Emails are normalised before the uniqueness check: lower-cased; for Gmail/Googlemail, dots and `+tag` removed. Disposable-email domains are rejected at sign-up. |
+| BR-2 | Emails are normalised before the uniqueness check: trimmed and lower-cased only. Dots and `+tag` are kept, because different addresses may belong to different people. Disposable-email domains are rejected at sign-up. |
 | BR-3 | The quota survives account deletion: re-signing up with the same normalised email does not grant a new prototype. |
 | BR-4 | A user may add a remark and regenerate requirements **at most 2 times** per request. |
 | BR-5 | Before pressing *Generate requirements* the user can play back the recording and re-record any number of times. After generation the recording is locked; only remarks (BR-4) can change the requirements. |
@@ -168,7 +168,7 @@ Sign up (email) → Record → [Play back / re-record] → Generate requirements
 ## 7. Acceptance criteria (Phase 1 done when…)
 
 1. A new user can sign up, record ≤ 10 min, play back and re-record, generate, revise twice (a third attempt is refused by UI **and** API), and approve or decline.
-2. The same email, including Gmail dot/plus variants and after deleting and re-creating the account, cannot submit a second request.
+2. The same email, in any letter case and after deleting and re-creating the account, cannot submit a second request.
 3. A second account from the same IP shows an IP flag with the linked account in the admin queue.
 4. Admin approve → build → prototype appears in the admin QA queue with a working preview link; the user has received no link yet.
 5. Admin release → user receives the link by email; it works for anyone with the link.

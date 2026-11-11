@@ -6,6 +6,47 @@ Builds what [requirements.md](requirements.md) asks for, on the stack in [archit
 
 ---
 
+## 0. Progress (read this first when picking up the work)
+
+Last updated 2026-11-10.
+
+| Task | Status | Notes |
+|---|---|---|
+| M0.1 Repo scaffold | Done | pnpm workspace, `apps/web`, `apps/worker` (uv, Python 3.13), CI for lint, typecheck, ruff, pytest. No Prettier yet. |
+| M0.2 Migration | Done | `supabase/migrations/20261110000000_init.sql`, applied to the dev project. |
+| M0.3 Email normalisation | Done, changed | `apps/web/lib/email.ts`: trim and lower-case only. Gmail dot/plus rules removed (owner's decision: same-looking addresses may be different people). No unit tests. |
+| M0.4 Users in the database | Done, changed | No webhook. `ensureUser()` in `lib/users.ts` runs in the `/app` and `/admin` layouts: creates the `users` row + `signup` event on first visit; a returning email relinks its existing row (no "account exists" block). Tested by the owner. |
+| M0.5 Access checks | Done | `lib/auth.ts`. Admins are sent from `/app` to `/admin`, so admins never see the user app. |
+| M0.6 Design system | Done | `components/ui/`: Button (`md`/`sm`, variants primary, inverse, outline, danger), ButtonLink, Input, Textarea, Card (`user`/`admin`), Pill (`md`/`sm`, tones), Dialog (native `<dialog>`, 640px), ProgressTrack, Wave, Container. Button styles shared in `button-styles.ts`. All colour tokens in `globals.css`. Preview at `/dev/components` (dev only). Smaller pieces (tab buttons with counts, QA checklist bar) are built with the screens that use them. |
+| M0.7 Landing and auth screens | Done | Clerk `<SignIn />` / `<SignUp />` styled in `lib/clerk-appearance.ts`. |
+| M0.8 `/api/me` | Partly done | Sign-up IP is already stored by `ensureUser()`. The endpoint comes with M2. |
+| Motion | Started | `motion` (v14, `motion/react`) added. `Wave` has an `animated` prop (`components/ui/animated-wave.tsx`): bars move while on screen, still under reduced motion. On for the Free plan wave and the footer wave; the Paid plan wave stays flat on purpose. |
+
+**Uncommitted as of 2026-11-10 end of day:** everything after the Clerk integration commit (database client, `ensureUser`, email normalisation, admin redirect, components, Motion, doc updates). The owner commits; run `pnpm lint`, `pnpm typecheck` and `pnpm build` first (all passed at end of day).
+
+**Next session, pick one (the owner decides):**
+1. Optional Motion polish, offered but not yet approved: hero entrance (headline, text and wave in sequence), hero playhead moving across the wave, dialog fade and scale on open.
+2. **M2 recorder screen**, starting with the `/app/record` layout from `Record.dc.html` using the shared components, before any audio code.
+3. **M1 builder spike** (worker): the static-export test with the internal coding agent.
+
+**Ways of working:** the owner builds alone and goes one small step at a time: each step is explained and approved before code is written.
+
+**Decisions made during M0:**
+- Sign-in is Google or a 6-digit email code, no passwords (Clerk dashboard settings).
+- Admin role lives in Clerk `publicMetadata.role = "admin"`, read from the session token claim `metadata`.
+- `cacheComponents` and partial prefetching are off in `next.config.ts`.
+- One database URL: `DATABASE_URL` (transaction pooler, port 6543). `drizzle.config.ts` reuses it with port 5432 for `drizzle-kit pull`.
+- `postgres` (postgres.js) is pinned to 3.x for drizzle-kit compatibility.
+- No `sign_in` events: Clerk keeps sign-in history.
+- Same IP across accounts is **flagged for admins, never auto-rejected** (offices share IPs). Built in M2.8.
+- No Vitest yet (owner's choice); add it when there is logic worth testing.
+- pnpm install scripts: `sharp`, `unrs-resolver` and `esbuild` are set to `false` under `allowBuilds` in `pnpm-workspace.yaml`. A new package with an install script makes `pnpm install` fail with `ERR_PNPM_IGNORED_BUILDS` until it is listed there.
+- Local dev stores `::1` as the sign-up IP; real IPs appear once deployed.
+
+**Schema changes:** add a SQL file to `supabase/migrations`, run `pnpm dlx supabase db push --remote`, then `pnpm --filter web db:pull` to regenerate `apps/web/lib/db/generated/`. Commit all of it.
+
+---
+
 ## 1. Approach
 
 Six milestones. Each ends with something that can be demonstrated and checked against the acceptance criteria.
@@ -44,10 +85,10 @@ These fill in details the architecture leaves open. Each is a default; change it
 | Migrations | Supabase CLI, SQL files in `supabase/migrations` | Single source of truth for both apps. Drizzle schema is generated from the database (`drizzle-kit pull`). |
 | Validation | Zod on every route handler input and on the requirement agent output | |
 | Requirement agent | Vercel AI SDK `generateObject` with the OpenRouter provider and the Zod `RequirementsDraft` schema (+ `title`) | Architecture §1. |
-| Auth UI | Clerk with **email code only** (no password), custom screens built on Clerk's `useSignUp` / `useSignIn` hooks to match the design | Design screens 1 and 2. |
+| Auth UI | Clerk with **Google or email code** (no password), Clerk's `<SignIn />` / `<SignUp />` styled through `appearance` and `localization` to match the design | Design screens 1 and 2. |
 | Email | Resend + React Email templates in `apps/web/emails`, also called by the worker through a small internal API or the Resend API directly | |
 | Object storage | Supabase Storage (audio, tarballs, logs); Cloudflare R2 through its S3 API (`boto3` in the worker) | Architecture §1. |
-| Testing | Vitest (web unit), Playwright (web end-to-end, OpenRouter mocked), pytest (worker, with a fake sandbox) | See §6. |
+| Testing | Vitest (web unit, not set up yet), Playwright (web end-to-end, OpenRouter mocked), pytest (worker, with a fake sandbox) | See §6. |
 | CI | GitHub Actions: lint, typecheck, unit tests on every push; Playwright on pull requests | |
 | Error tracking | Sentry for web and worker | NFR-10. |
 
@@ -57,11 +98,11 @@ These fill in details the architecture leaves open. Each is a default; change it
 
 Owner: you, unless noted. Items marked **(blocks M1)** must be done before M1 can finish.
 
-- [ ] Git hosting: create the GitHub repository (or confirm where the code lives).
+- [x] Git hosting: https://github.com/GluonForce/genie-public.git (branch `main`).
 - [ ] **Prototype domain (Q4)** registered and added to Cloudflare **(needed for M5 only)**. Until then the prototype host runs locally at `{slug}.localhost:8787` (see M1.7), and the domain is read from `PROTO_BASE_DOMAIN` everywhere, so adding it later is configuration only.
 - [ ] Cloudflare account: R2 bucket, KV namespace, Workers enabled, API token.
-- [ ] Supabase project (dev), later a separate prod project.
-- [ ] Clerk application (dev instance), later prod. Settings: email code sign-in, passwords off, block email subaddresses, block disposable domains, session token claim `{"metadata": "{{user.public_metadata}}"}`.
+- [x] Supabase project (dev), later a separate prod project.
+- [x] Clerk application (dev instance), later prod. Settings: Google and email code sign-in, passwords off, block email subaddresses, block disposable domains, session token claim `{"metadata": "{{user.public_metadata}}"}`.
 - [ ] E2B account and API key **(blocks M1)**.
 - [ ] OpenRouter key with a monthly spend alert; confirm model ids for transcription, requirements and coding (same as internal `.env`).
 - [ ] Railway project for the worker.
@@ -83,19 +124,19 @@ Each task lists where the work lives and how we know it is done.
 |---|---|---|---|
 | M0.1 | Repo scaffold: pnpm workspace, `apps/web` (Next.js 16), `apps/worker` (uv), `infra/*`, ESLint, Prettier, Ruff, `.env.example` per app, GitHub Actions for lint and typecheck | root | CI is green on an empty app |
 | M0.2 | Migration `0001`: enums, `users`, `prototypes`, `events`, indexes, RLS on with no policies; private Storage buckets `audio`, `sources`, `sites`, `logs` | `supabase/migrations` | `supabase db reset` builds the schema locally; anon key can read nothing |
-| M0.3 | Email normalisation (lower-case; Gmail/Googlemail dots and `+tag` removed) with unit tests | `apps/web/lib/email.ts` | Tests cover Gmail variants, other domains, upper case |
-| M0.4 | Clerk webhook `/api/webhooks/clerk` (verified with Svix): `user.created` creates or relinks the `users` row by normalised email and logs `signup`; `user.updated` syncs email and role copy (`role_changed`); `user.deleted` sets `deleted_at` and clears `clerk_user_id` | `apps/web/app/api/webhooks/clerk` | See rule below; events rows written |
+| M0.3 | Email normalisation: trim and lower-case only. Unit tests deferred | `apps/web/lib/email.ts` | Letter-case variants map to one key |
+| M0.4 | `ensureUser()` runs in the `/app` and `/admin` layouts: on the first visit after sign-up it creates or relinks the `users` row by normalised email, stores the sign-up IP and logs `signup`, all in one transaction. No webhook. Email changes and account deletion (`deleted_at`, clear `clerk_user_id`) still need a mechanism when those features arrive | `apps/web/lib/users.ts` | See rule below; `users` and `events` rows written |
 | M0.5 | Access checks in layouts and route handlers, not in `proxy.ts` (Clerk and Next.js both advise against path-based checks there): `/app/**` needs a signed-in user; `/admin/**` and `/api/admin/**` need `metadata.role === "admin"`, otherwise 404. Helpers in `lib/auth.ts` | `apps/web/lib/auth.ts`, `app/app/layout.tsx`, `app/admin/layout.tsx` | A user gets 404 on `/admin`; an admin sees the shell |
 | M0.6 | Design system: Tailwind theme tokens, fonts, components (Button, Input, Card, Pill, Dialog, Wave, ProgressTrack, AppHeader, AdminHeader, Footer) | `apps/web/components` | A `/dev/components` page (dev only) shows every component |
 | M0.7 | Landing page, sign-up and verify-code screens wired to Clerk | `apps/web/app/(marketing)`, `app/(auth)` | Sign-up with a real email reaches `/app`; layout holds at 360px width |
-| M0.8 | `GET /api/me`: returns account and prototype status; records sign-up IP on first call (FR-A2) | `apps/web/app/api/me` | IP stored once, from `x-forwarded-for` |
+| M0.8 | `GET /api/me`: returns account and prototype status. The sign-up IP (FR-A2) is already stored by `ensureUser()` from `x-forwarded-for` | `apps/web/app/api/me` | Returns the current status |
 
 **Rule for duplicate emails (BR-1 to BR-3):** when a new Clerk user arrives, look up `users.email_normalized`.
 - No row: create one.
 - A row with `deleted_at` set (account deleted earlier): relink it to the new Clerk user, so the used quota comes back with it.
-- An active row owned by another Clerk user (for example `j.doe@gmail.com` and `jdoe@gmail.com`): delete the new Clerk user through the Clerk API and show "An account already exists for this email address".
+- An active row owned by another Clerk user: also relink it. Clerk never allows two accounts with the same email, so the old Clerk account must have been deleted (without a webhook we don't hear about deletions).
 
-**Exit:** AC-2 passes for sign-up (Gmail variants and delete-then-recreate both end up on the same quota).
+**Exit:** AC-2 passes for sign-up (delete-then-recreate ends up on the same quota).
 
 ### M1 Builder in the cloud
 
@@ -175,8 +216,8 @@ Genie_v2/
   apps/
     web/
       app/(marketing)/        landing, legal pages
-      app/(auth)/             sign-up, verify
-      app/(app)/app/          user flow by status
+      app/(auth)/             sign-in, sign-up (Clerk)
+      app/app/                user flow by status
       app/admin/              queue and prototype detail
       app/api/                route handlers (architecture §6)
       components/             design system
@@ -227,4 +268,4 @@ Every acceptance criterion (requirements §7) gets at least one automated or wri
 | P1 | Who is building this, and is there a target launch date? | **Answered:** the owner builds it alone. No fixed date yet. |
 | P2 | One repository or two (web app and worker)? | One repository (recommended), each app deployed from its own folder. |
 | P3 | Prototype domain (Q4) | **Answered:** bought after the app is complete, before launch (M5). Development uses `{slug}.localhost`. |
-| P4 | Is the duplicate-email rule in M0.4 (refuse a second account for the same normalised email) right? | Yes, as written. |
+| P4 | Is the duplicate-email rule in M0.4 right? | **Answered:** no Gmail dot/plus merging; a returning email always relinks to its existing row. |

@@ -49,7 +49,7 @@ export function Plans() {
         <div className="flex flex-wrap items-stretch gap-7">
           <article className="flex min-w-0 flex-[1_1_400px] flex-col gap-4.5 rounded-[28px] bg-navy p-9 text-white">
             <PlanHeading name="Free" status="Available now" />
-            <Wave bars={freeWave} className="h-12 gap-1.5" barShape="rounded-sm" />
+            <Wave bars={freeWave} className="h-12 gap-1.5" barShape="rounded-sm" animated />
             <ul className="flex list-disc flex-col gap-2 pl-5.5">
               {freeFeatures.map((feature) => (
                 <li key={feature}>{feature}</li>

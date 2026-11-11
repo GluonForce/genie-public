@@ -73,7 +73,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <Wave bars={fadeBars} align="end" className="h-18 gap-1.5" barShape="rounded-t" />
+        <Wave bars={fadeBars} align="end" className="h-18 gap-1.5" barShape="rounded-t" animated />
 
         <div className="flex flex-wrap justify-between gap-x-6 gap-y-2 border-t-4 border-navy pt-5 text-[15px]">
           <span>© 2026 Gluonforce. All rights reserved.</span>

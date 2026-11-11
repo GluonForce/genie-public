@@ -1,0 +1,17 @@
+{
+  "title": "Team lunch poll",
+  "summary": "A team lead describes a small tool for their office: each day someone proposes a few lunch places, colleagues vote, and everyone can see which place is winning before noon.",
+  "intent": "Build a simple daily lunch voting app for a small team to see whether it would replace the group chat back-and-forth.",
+  "functional_requirements": [
+    "Anyone can create today's poll with two to six lunch options, each with a name and an optional note such as price or walking time.",
+    "A person enters their name once and can then vote for one option; they can change their vote until the poll is closed.",
+    "Results show the number of votes per option as bars, with the leading option highlighted.",
+    "The poll creator can close the poll, which announces the winner.",
+    "Past polls are listed with their winner and date."
+  ],
+  "user_stories": [
+    "As a team member, I want to vote for where we eat so that the choice is quick and fair.",
+    "As a team lead, I want to close the poll at a set time so that we can leave together.",
+    "As a team member, I want to see past winners so that we don't go to the same place every day."
+  ]
+}

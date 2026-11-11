@@ -8,7 +8,7 @@ Builds what [requirements.md](requirements.md) asks for, on the stack in [archit
 
 ## 0. Progress (read this first when picking up the work)
 
-Last updated 2026-11-10.
+Last updated 2026-11-11.
 
 | Task | Status | Notes |
 |---|---|---|
@@ -21,13 +21,28 @@ Last updated 2026-11-10.
 | M0.7 Landing and auth screens | Done | Clerk `<SignIn />` / `<SignUp />` styled in `lib/clerk-appearance.ts`. |
 | M0.8 `/api/me` | Partly done | Sign-up IP is already stored by `ensureUser()`. The endpoint comes with M2. |
 | Motion | Started | `motion` (v14, `motion/react`) added. `Wave` has an `animated` prop (`components/ui/animated-wave.tsx`): bars move while on screen, still under reduced motion. On for the Free plan wave and the footer wave; the Paid plan wave stays flat on purpose. |
+| M1.1 Export spike | Done in effect | No separate spike: the ported agent with the new Static Export prompt section passed lint, `tsc` and `output: "export"` on every real run (habit-tracker test requirement, ~55 s agent time, ~$0.07–0.09 per build). |
+| M1.2 E2B template | Done | `infra/e2b-template/`: `web/` is internal Genie's `templates/web` copied verbatim except `next.config.ts` (`output: "export"`, `trailingSlash`, `images.unoptimized`). `build.py` builds template `genie-web` (Node 22, pnpm 12 via corepack, `node_modules` baked in, 2 vCPU / 4 GB) with the E2B Python SDK. Cold start ~2 s; blank template builds in 15 s. |
+| M1.3 Agent in the worker | Done | Internal Genie files copied into `apps/worker/src/genie_worker/` with minimal changes (see decisions): `agents/coding_agent.py`, `agents/context/web/code_generation.txt`, `core/openrouter.py`, `core/platforms.py` (WEB only), `models/requirements.py` (`RequirementsDraft` only). Tools go through the swappable `sandbox/` package. |
+| M1.4 Job loop | Done | `db.py` (psycopg 3 pool, claim with `FOR UPDATE SKIP LOCKED`, heartbeat, finish, requeue, stale requeue after 40 min; every status change is a conditional update + `events` row) and `jobs.py` (poll every 5 s, one job at a time, heartbeat every 30 s, a shutdown mid-build requeues the job). Run with `uv run genie-worker`. |
+| M1.5 Checks and fix round | Done | `build.py`: lint → `tsc --noEmit` → `pnpm build`, stopping at the first failure; on failure the errors go back to the same agent conversation once, then `build_failed`. Tested for real with an injected type error (fixed in 12 s). |
+| M1.6 Outputs | Done | `artifacts.py` + `storage.py`: `sources/{id}.tar.gz`, `sites/{id}.tar.gz` (passed builds only) and `logs/{id}/{attempt}.jsonl` (outcome, checks, full agent conversation) in Supabase Storage; cost from OpenRouter's reported usage added to `build_cost_usd`. `slugs.py`: slug `{kebab-title}-{6 random}` assigned on the first claim (kept across rebuilds). `publish.py`: `out/` files to R2 `sites/{slug}/` (leftovers of an earlier build removed), KV `{slug}` = `preview`, `site_url` stored. |
+| M1.7 Prototype host | Done (local) | `infra/proto-host/src/index.ts`, run with `pnpm --filter proto-host dev` (wrangler dev on port 8787, **remote** R2 and KV bindings, so it serves the real bucket). Slug from the host, KV state: `live` serves, `preview` needs a token (`?token=` once, then an HttpOnly cookie on that subdomain), `expired` → 410 page, `offline`/missing → 404 page. Path mapping for the trailing-slash export, `404.html` fallback, CSP `connect-src 'self'`, `noindex`, immutable cache for `_next/static`. Token = `{expiry}.{hex HMAC-SHA256(PREVIEW_TOKEN_SECRET, "{slug}.{expiry}")}`; secret in `.dev.vars` (gitignored). Dev helper: `node scripts/preview-token.mjs <slug> [minutes]`. All checks passed (tampered/expired/other-slug tokens refused, states switch within ~60 s). Deploying it waits for the domain (M5). |
+| M1.8 Smoke check + admin email | Not started | Needs M1.7 and Resend. Until then a passed build goes straight to `awaiting_qa`. |
+| M1.9 `enqueue` command | Done | `uv run genie-worker enqueue requirements.json` adds a `dev-…@genie.test` user and an `approved` prototype. |
 
-**Uncommitted as of 2026-11-10 end of day:** everything after the Clerk integration commit (database client, `ensureUser`, email normalisation, admin redirect, components, Motion, doc updates). The owner commits; run `pnpm lint`, `pnpm typecheck` and `pnpm build` first (all passed at end of day).
+**Test data kept for M3 (owner's decision):** prototypes in `awaiting_qa` with their events and Storage files: `0b7e875c-6b4d-410c-a001-9a1e1abaabf7` (user `dev-c5dd9ac2@genie.test`, built before slugs existed, so no slug or R2 site) and `946318ad-dfdc-4681-8943-c05bad5a1097` (user `dev-64316d34@genie.test`, slug `habit-tracker-0tb1te`, 40 files in R2, KV `preview`).
+
+**Pinned (owner, 2026-11-11): the prototype domain.** `gluonforce.workers.dev` was considered as a stand-in and rejected: workers.dev gives the Worker one address with no wildcard subdomains, so prototypes would need path-based URLs, a per-prototype `basePath` (every prototype rebuilt at the switch) and one shared origin (no per-prototype `localStorage` isolation, NFR-5). Until a domain is bought, everything runs at `{slug}.localhost:8787`. Buy the domain (e.g. through Cloudflare Registrar) whenever links must work for other people, not only at M5; then going live is configuration only: wildcard route `*.<domain>/*`, `wrangler secret put PREVIEW_TOKEN_SECRET`, `wrangler deploy`, `PROTO_BASE_DOMAIN` in `wrangler.jsonc` and `apps/worker/.env`.
+
+**Demo on 2026-11-13:** follow [demo-guide.md](demo-guide.md). Sample requirements in `apps/worker/examples/`.
+
+**Uncommitted as of 2026-11-11:** all of the M1 work above (`apps/worker/`, `infra/e2b-template/`, `infra/proto-host/`, `workerd` in `pnpm-workspace.yaml`, docs). Before committing, in `apps/worker`: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest` (28 tests; `GENIE_DB_TESTS=1` also runs the two tests against the dev database). On Windows set `PYTHONIOENCODING=utf-8` when running `infra/e2b-template/build.py`.
 
 **Next session, pick one (the owner decides):**
-1. Optional Motion polish, offered but not yet approved: hero entrance (headline, text and wave in sequence), hero playhead moving across the wave, dialog fade and scale on open.
+1. **Finish M1:** the smoke check before `awaiting_qa` (M1.8; needs `PREVIEW_TOKEN_SECRET` in `apps/worker/.env` and a `SMOKE_CHECK=false` switch for runs without the host).
 2. **M2 recorder screen**, starting with the `/app/record` layout from `Record.dc.html` using the shared components, before any audio code.
-3. **M1 builder spike** (worker): the static-export test with the internal coding agent.
+3. Optional Motion polish, offered but not yet approved: hero entrance, hero playhead, dialog fade and scale.
 
 **Ways of working:** the owner builds alone and goes one small step at a time: each step is explained and approved before code is written.
 
@@ -42,6 +57,20 @@ Last updated 2026-11-10.
 - No Vitest yet (owner's choice); add it when there is logic worth testing.
 - pnpm install scripts: `sharp`, `unrs-resolver` and `esbuild` are set to `false` under `allowBuilds` in `pnpm-workspace.yaml`. A new package with an install script makes `pnpm install` fail with `ERR_PNPM_IGNORED_BUILDS` until it is listed there.
 - Local dev stores `::1` as the sign-up IP; real IPs appear once deployed.
+
+**Decisions made during M1:**
+- **The worker polls the database** for `approved` prototypes; nothing calls the worker when an admin approves. A "wake up" endpoint may be added later only as a nudge, never as the source of truth.
+- **The sandbox is swappable.** The agent's tools talk to the `Sandbox` interface in `genie_worker/sandbox/base.py` (list, read, write, delete, pack, run, close). Only `sandbox/e2b.py` (and `infra/e2b-template/build.py`) import `e2b`; `SANDBOX_PROVIDER` picks the provider. Tests use a local-folder sandbox.
+- **Reuse internal Genie as-is where possible.** The agent's tool names, arguments, docstrings, request limit (250), fallback model and command blocks are unchanged. Prompt changes: written for a member of the public instead of employees and clients, `generated/` → "the project directory", and a new **Static Export** section (no runtime dynamic routes, no server-only APIs, run `pnpm build` once at the end since it also type-checks).
+- **Prompt caching is on** for the coding agent (`cache=True`): instructions, tools and the conversation are read from the provider's cache. Mainly saves on fix rounds, which resend the whole conversation.
+- **A passed build goes to `awaiting_qa`** for now; the R2 preview and smoke check slot in before it in M1.8.
+- **Crashes are not retried automatically.** Model, sandbox, storage or invalid-requirement errors end in `build_failed` with the error; failed checks get one fix round first. An admin can retry (M3.5).
+- **QA rebuild note:** `build_note` is added to the agent's prompt as "an earlier build was rejected in review; avoid these defects", and cleared when a build passes.
+- New event action `build_requeued` (system, `building → approved`) for stale or shut-down builds; add it to the architecture event catalogue.
+- psycopg needs the selector event loop on Windows; `db.run_async()` handles it (Railway runs Linux).
+- `wrangler dev` with remote bindings needs the account's workers.dev subdomain (registered: `gluonforce.workers.dev`). On Windows, stopping `wrangler dev` can leave `workerd.exe` running on port 8787; stop stray `workerd` processes before restarting, or requests reach the old instance.
+- The pnpm script is `preview-link`, not `token` (`pnpm token` is a built-in pnpm command).
+- The fix round, the build log and the cost all use pydantic-ai's run result: `RunUsage.cost` comes from OpenRouter, so no price table is kept.
 
 **Schema changes:** add a SQL file to `supabase/migrations`, run `pnpm dlx supabase db push --remote`, then `pnpm --filter web db:pull` to regenerate `apps/web/lib/db/generated/`. Commit all of it.
 

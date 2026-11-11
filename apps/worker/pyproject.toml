@@ -8,7 +8,10 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "boto3>=1.44.0",
+    "e2b>=2.63.0",
     "httpx>=0.28.1",
+    "psycopg[binary,pool]>=3.3.8",
     "pydantic-ai-slim[openrouter]>=2.56.0",
     "pydantic-settings>=2.15.0",
 ]
@@ -31,3 +34,10 @@ dev = [
     "pytest>=9.2.0",
     "ruff>=0.17.4",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# Copied from internal Genie: prompts and tool docstrings (sent to the model) are kept unwrapped
+"src/genie_worker/agents/coding_agent.py" = ["E501"]
+"src/genie_worker/core/openrouter.py" = ["E501"]
+"src/genie_worker/core/platforms.py" = ["E501"]
+"src/genie_worker/models/requirements.py" = ["E501"]

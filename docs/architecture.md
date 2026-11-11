@@ -287,6 +287,7 @@ create index on events (ip);
 | Build | `build_started` | system | `{attempt}` |
 | | `build_succeeded` · `build_failed` | system | `{attempt, model, input_tokens, output_tokens, cost_usd, log_path, error}` |
 | | `build_retried` · `rebuild_requested` | admin | `reason` = defect note |
+| | `build_requeued` | system | `building → approved`; `reason` = no heartbeat, or worker shut down mid-build |
 | Delivery | `qa_ready` · `released` | system · admin | |
 | | `expired` | system | |
 | | `taken_offline` · `restored` | admin | `reason` |

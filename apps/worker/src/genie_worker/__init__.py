@@ -1,2 +1,4 @@
 def main() -> None:
-    print("Hello from genie-worker!")
+    from genie_worker.cli import main as cli_main
+
+    cli_main()

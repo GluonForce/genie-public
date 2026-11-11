@@ -1,0 +1,3 @@
+# Copy to .dev.vars for `wrangler dev`. In production: `wrangler secret put PREVIEW_TOKEN_SECRET`.
+# The web app signs admin preview links with the same secret (M3.4).
+PREVIEW_TOKEN_SECRET=

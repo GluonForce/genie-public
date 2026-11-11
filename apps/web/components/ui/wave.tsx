@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { AnimatedWave } from "./animated-wave";
 
 type WaveProps = {
   /** Bar heights as a percentage of the wave's height */
@@ -11,6 +12,8 @@ type WaveProps = {
   playedClass?: string;
   unplayedClass?: string;
   barShape?: string;
+  /** Bars move like live audio (no playhead) */
+  animated?: boolean;
 };
 
 /** The sound-wave track used across the design. Decorative only. */
@@ -22,7 +25,20 @@ export function Wave({
   playedClass = "bg-coral",
   unplayedClass = "bg-coral-soft",
   barShape = "rounded",
+  animated = false,
 }: WaveProps) {
+  if (animated) {
+    return (
+      <AnimatedWave
+        bars={bars}
+        className={className}
+        align={align}
+        barClass={playedClass}
+        barShape={barShape}
+      />
+    );
+  }
+
   return (
     <div
       aria-hidden="true"

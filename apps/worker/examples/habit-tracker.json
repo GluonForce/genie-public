@@ -1,0 +1,17 @@
+{
+  "title": "Habit tracker",
+  "summary": "A person describes a simple habit tracker they want for themselves. They want to add habits, tick them off each day and see their current streak.",
+  "intent": "Build a personal daily habit tracker to check whether the idea is worth pursuing.",
+  "functional_requirements": [
+    "The user can add a habit with a name and an optional emoji.",
+    "The user can mark each habit as done for today, and undo it.",
+    "Each habit shows its current streak of consecutive days.",
+    "The user can delete a habit.",
+    "A summary at the top shows how many habits are done today out of the total."
+  ],
+  "user_stories": [
+    "As a user, I want to add habits so that I can track what I care about.",
+    "As a user, I want to tick off a habit for today so that I keep my streak going.",
+    "As a user, I want to see my streaks so that I stay motivated."
+  ]
+}

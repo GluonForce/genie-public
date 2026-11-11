@@ -11,6 +11,18 @@
   --color-ink-muted: #4a5278;
   --color-rule: #c9ccda;
   --color-rule-blush: #e8bdb6;
+  --color-admin-bg: #f4f5fa;
+  --color-admin-rule: #e6e9f7;
+  --color-backdrop: #4a4f73;
+
+  /* Status colours: background, and the "-ink" text colour that goes on it */
+  --color-amber: #ffe9b8;
+  --color-amber-ink: #5c3600;
+  --color-success: #ddf3ea;
+  --color-success-ink: #0b5a3f;
+  --color-danger: #a31f12;
+  --color-danger-tint: #ffdad5;
+  --color-danger-ink: #8a1a0e;
 }
 
 @theme inline {

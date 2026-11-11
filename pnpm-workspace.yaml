@@ -5,3 +5,5 @@ packages:
 allowBuilds:
   sharp: false
   unrs-resolver: false
+  esbuild: false
+  workerd: false

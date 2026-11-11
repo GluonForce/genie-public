@@ -1,0 +1,17 @@
+// Prototype host: serves R2 sites/{slug}/ at {slug}.<PROTO_BASE_DOMAIN> by its KV state.
+// Local dev: `pnpm --filter proto-host dev`, then open http://{slug}.localhost:8787.
+// The bindings are remote, so local dev reads the real bucket and namespace.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "genie-proto-host",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "r2_buckets": [{ "binding": "SITES", "bucket_name": "genie-prototypes", "remote": true }],
+  "kv_namespaces": [{ "binding": "STATE", "id": "74b12cdd0ee447969de5a1bc281939c3", "remote": true }],
+  "vars": {
+    // Becomes the prototype domain at launch (M5)
+    "PROTO_BASE_DOMAIN": "localhost:8787",
+    "APP_URL": "http://localhost:3000"
+  },
+  "dev": { "port": 8787 }
+}

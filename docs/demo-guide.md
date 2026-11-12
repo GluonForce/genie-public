@@ -2,7 +2,7 @@
 
 For the demo on Friday 2026-11-13. Shows the build pipeline (milestone M1): an approved requirement becomes a working prototype, stored in Supabase and Cloudflare R2, and opened through the prototype host with an admin preview link.
 
-What the demo is **not** yet: there is no recording screen (M2) and no admin panel (M3). A requirement is "approved" with a command instead, and the preview link is made with a command instead of an "Open preview" button.
+What the demo is **not** yet: there is no recording screen (M2) and no requirements review in the admin panel (M3). A requirement is "approved" with a command instead. The admin QA screen (queue, Open preview, Release, Rebuild) is real.
 
 ---
 
@@ -25,7 +25,7 @@ requirement approved ──► worker polls Postgres, claims it (status: buildin
 - One build takes about **75–90 seconds** and costs about **$0.07–0.09** in model usage.
 - Every step is recorded in the `events` table: who, what, when.
 - Prototypes are frontend only (data in the browser's localStorage) and served as static files. A security header blocks any call to other websites.
-- Each prototype gets its own subdomain (`{slug}.<domain>`), e.g. `habit-tracker-0tb1te`. Until the domain is bought this is `{slug}.localhost:8787`, so **links only work on this computer**.
+- Each prototype gets its own subdomain (`{slug}.<domain>`), e.g. `team-lunch-poll-i081p9`. Until the domain is bought this is `{slug}.localhost:8787`, so **links only work on this computer**.
 
 ---
 
@@ -95,14 +95,23 @@ Prototype 946318ad-… ready for QA
 
 **Note the slug** from the `Published … to sites/<slug>/` line.
 
-### Open the preview (terminal 3)
+### Open the preview in the admin screen (recommended)
+
+With the web app running (`pnpm dev` in `apps/web`, a fourth terminal) and signed in as an admin:
+
+1. Open `http://localhost:3000/admin`. The new prototype is under **Ready for QA** (the queue shows how long it has waited and what it cost).
+2. Click **Open QA**. The page shows the requirements as a checklist, the build facts (attempt, checks, build time, cost, model) and the decisions.
+3. Click **Open preview**: a new tab opens the prototype with a 15-minute admin link. Tick off the requirements as you click through.
+4. Click **Release**. The prototype moves to the **Live** tab and opens for anyone with the link (KV switches to `live`; allow up to a minute). Or type a defect into **Something is broken?** and click **Rebuild with this note**: the Railway worker rebuilds it with the note, and it comes back to Ready for QA.
+
+### Open the preview from the command line (fallback)
 
 ```bash
 cd ../../infra/proto-host
 node scripts/preview-token.mjs <slug> 120
 ```
 
-Open the printed link. The prototype loads, and the address bar changes to `http://<slug>.localhost:8787/` (the token became a cookie).
+**Copy the printed link and paste it into the browser's address bar** (clicking it in the terminal may not open it correctly). The prototype loads, and the address bar changes to `http://<slug>.localhost:8787/` (the token became a cookie).
 
 **Show the protection:** open `http://<slug>.localhost:8787/` in a private window: "This prototype is not available". Only admins with a link can see a build before release.
 
@@ -129,7 +138,7 @@ Within about a minute the private window shows the prototype without a token. Se
 | The published files | Cloudflare → R2 → `genie-prototypes` → `sites/<slug>/` |
 | The state | Cloudflare → Workers KV → namespace → key `<slug>` |
 
-Two earlier test prototypes are already there (kept for building the admin screens): slug `habit-tracker-0tb1te` is the one with a site in R2.
+Right now only one prototype is in the database: `team-lunch-poll-i081p9` (Ready for QA). Run `enqueue` for more.
 
 ---
 
@@ -137,7 +146,7 @@ Two earlier test prototypes are already there (kept for building the admin scree
 
 | Symptom | Fix |
 |---|---|
-| Preview link shows "not available" | The token expired (make a new one), or it was made for a different slug. Check the slug in the worker log. |
+| Preview link shows "not available" | Paste the link into the address bar instead of clicking it in the terminal. Otherwise the token expired (make a new one), or it was made for a different slug: check the slug in the worker log. |
 | Requests to `*.localhost:8787` hang or return 500 | An old host is still running. Stop terminal 1, run the `Stop-Process` line from section 2, start terminal 1 again. |
 | `wrangler dev` fails with "register a workers.dev subdomain" | Done already (`gluonforce.workers.dev`); if it reappears, run `npx wrangler login` again. |
 | KV change (live, expired) not visible yet | KV takes up to about 60 seconds to update everywhere. Wait and refresh. |

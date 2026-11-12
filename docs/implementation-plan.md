@@ -8,7 +8,7 @@ Builds what [requirements.md](requirements.md) asks for, on the stack in [archit
 
 ## 0. Progress (read this first when picking up the work)
 
-Last updated 2026-11-11.
+Last updated 2026-11-12.
 
 | Task | Status | Notes |
 |---|---|---|
@@ -21,6 +21,7 @@ Last updated 2026-11-11.
 | M0.7 Landing and auth screens | Done | Clerk `<SignIn />` / `<SignUp />` styled in `lib/clerk-appearance.ts`. |
 | M0.8 `/api/me` | Partly done | Sign-up IP is already stored by `ensureUser()`. The endpoint comes with M2. |
 | Motion | Started | `motion` (v14, `motion/react`) added. `Wave` has an `animated` prop (`components/ui/animated-wave.tsx`): bars move while on screen, still under reduced motion. On for the Free plan wave and the footer wave; the Paid plan wave stays flat on purpose. |
+| M3.4 (part) Admin QA screen | Done (demo subset) | `/admin` queue (design A1): tabs Ready for QA and Live with counts. `/admin/prototypes/[id]` (design A4): Open preview via `/api/admin/requests/[id]/preview` (15-minute token, opens in a new tab rather than an iframe because the preview cookie is third-party there), requirement checklist (browser only), Release (one transaction: `released`, `released_by/at`, `expires_at` +3 days, KV `live`, `released` event; rolls back if Cloudflare fails; no email yet), Rebuild with a note (→ `approved` + `build_note`, `rebuild_requested` event), build facts from events. `lib/prototype-host.ts`, `lib/format.ts`. `apps/web/.env.local` needs `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_KV_NAMESPACE_ID`, `PROTO_BASE_DOMAIN`, `PREVIEW_TOKEN_SECRET`. Clicked through by the owner 2026-11-12. Not yet: Decline, other tabs, record screen. |
 | M1.1 Export spike | Done in effect | No separate spike: the ported agent with the new Static Export prompt section passed lint, `tsc` and `output: "export"` on every real run (habit-tracker test requirement, ~55 s agent time, ~$0.07–0.09 per build). |
 | M1.2 E2B template | Done | `infra/e2b-template/`: `web/` is internal Genie's `templates/web` copied verbatim except `next.config.ts` (`output: "export"`, `trailingSlash`, `images.unoptimized`). `build.py` builds template `genie-web` (Node 22, pnpm 12 via corepack, `node_modules` baked in, 2 vCPU / 4 GB) with the E2B Python SDK. Cold start ~2 s; blank template builds in 15 s. |
 | M1.3 Agent in the worker | Done | Internal Genie files copied into `apps/worker/src/genie_worker/` with minimal changes (see decisions): `agents/coding_agent.py`, `agents/context/web/code_generation.txt`, `core/openrouter.py`, `core/platforms.py` (WEB only), `models/requirements.py` (`RequirementsDraft` only). Tools go through the swappable `sandbox/` package. |
@@ -28,21 +29,26 @@ Last updated 2026-11-11.
 | M1.5 Checks and fix round | Done | `build.py`: lint → `tsc --noEmit` → `pnpm build`, stopping at the first failure; on failure the errors go back to the same agent conversation once, then `build_failed`. Tested for real with an injected type error (fixed in 12 s). |
 | M1.6 Outputs | Done | `artifacts.py` + `storage.py`: `sources/{id}.tar.gz`, `sites/{id}.tar.gz` (passed builds only) and `logs/{id}/{attempt}.jsonl` (outcome, checks, full agent conversation) in Supabase Storage; cost from OpenRouter's reported usage added to `build_cost_usd`. `slugs.py`: slug `{kebab-title}-{6 random}` assigned on the first claim (kept across rebuilds). `publish.py`: `out/` files to R2 `sites/{slug}/` (leftovers of an earlier build removed), KV `{slug}` = `preview`, `site_url` stored. |
 | M1.7 Prototype host | Done (local) | `infra/proto-host/src/index.ts`, run with `pnpm --filter proto-host dev` (wrangler dev on port 8787, **remote** R2 and KV bindings, so it serves the real bucket). Slug from the host, KV state: `live` serves, `preview` needs a token (`?token=` once, then an HttpOnly cookie on that subdomain), `expired` → 410 page, `offline`/missing → 404 page. Path mapping for the trailing-slash export, `404.html` fallback, CSP `connect-src 'self'`, `noindex`, immutable cache for `_next/static`. Token = `{expiry}.{hex HMAC-SHA256(PREVIEW_TOKEN_SECRET, "{slug}.{expiry}")}`; secret in `.dev.vars` (gitignored). Dev helper: `node scripts/preview-token.mjs <slug> [minutes]`. All checks passed (tampered/expired/other-slug tokens refused, states switch within ~60 s). Deploying it waits for the domain (M5). |
-| M1.8 Smoke check + admin email | Not started | Needs M1.7 and Resend. Until then a passed build goes straight to `awaiting_qa`. |
-| M1.9 `enqueue` command | Done | `uv run genie-worker enqueue requirements.json` adds a `dev-…@genie.test` user and an `approved` prototype. |
+| M1.8 Smoke check + admin email | Not started | Designed: the worker mints a 5-minute preview token, fetches `site_url`, needs 200 + HTML (retries ~90 s for KV delay), else `build_failed`. Needs `PREVIEW_TOKEN_SECRET` in the worker env and a `SMOKE_CHECK=false` switch (previews only resolve on the owner's machine until the domain exists). The admin "ready for QA" email waits for Resend (M4.3). Until then a passed build goes straight to `awaiting_qa`. |
+| M1.9 `enqueue` command | Done | `uv run genie-worker enqueue requirements.json` adds a `dev-…@genie.test` user and an `approved` prototype. Samples in `apps/worker/examples/` (`habit-tracker.json`, `team-lunch-poll.json`). |
+| Worker on Railway | Done | `apps/worker/Dockerfile` (Python 3.13, uv 0.13.5, `uv sync --locked --no-dev`, non-root, runs `genie-worker` directly so SIGTERM requeues a running build), `.dockerignore`, `railway.json` (Dockerfile builder, 1 replica, restart on failure, watch `apps/worker/**`). Railway service: root directory `apps/worker`, branch `yehan-dev`, no public networking, variables = `apps/worker/.env`. The owner deployed it and built `team-lunch-poll-i081p9` through it. **Don't run a local worker at the same time**: both poll the same dev database. |
 
-**Test data kept for M3 (owner's decision):** prototypes in `awaiting_qa` with their events and Storage files: `0b7e875c-6b4d-410c-a001-9a1e1abaabf7` (user `dev-c5dd9ac2@genie.test`, built before slugs existed, so no slug or R2 site) and `946318ad-dfdc-4681-8943-c05bad5a1097` (user `dev-64316d34@genie.test`, slug `habit-tracker-0tb1te`, 40 files in R2, KV `preview`).
+**Test data (2026-11-12):** the earlier test prototypes were deleted from the dev database by accident; their orphaned R2 files, KV keys and Storage files (`habit-tracker-0tb1te`, `team-lunch-poll-s62i2l`, ids `0b7e875c…`, `946318ad…`, `fa780c8e…`) were then removed. Remaining: `590fa86c-f463-4947-aaed-59fed5a0d6c1`, slug `team-lunch-poll-i081p9`. New test data: `uv run genie-worker enqueue examples/<file>.json` (built by the Railway worker).
 
 **Pinned (owner, 2026-11-11): the prototype domain.** `gluonforce.workers.dev` was considered as a stand-in and rejected: workers.dev gives the Worker one address with no wildcard subdomains, so prototypes would need path-based URLs, a per-prototype `basePath` (every prototype rebuilt at the switch) and one shared origin (no per-prototype `localStorage` isolation, NFR-5). Until a domain is bought, everything runs at `{slug}.localhost:8787`. Buy the domain (e.g. through Cloudflare Registrar) whenever links must work for other people, not only at M5; then going live is configuration only: wildcard route `*.<domain>/*`, `wrangler secret put PREVIEW_TOKEN_SECRET`, `wrangler deploy`, `PROTO_BASE_DOMAIN` in `wrangler.jsonc` and `apps/worker/.env`.
 
 **Demo on 2026-11-13:** follow [demo-guide.md](demo-guide.md). Sample requirements in `apps/worker/examples/`.
 
-**Uncommitted as of 2026-11-11:** all of the M1 work above (`apps/worker/`, `infra/e2b-template/`, `infra/proto-host/`, `workerd` in `pnpm-workspace.yaml`, docs). Before committing, in `apps/worker`: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest` (28 tests; `GENIE_DB_TESTS=1` also runs the two tests against the dev database). On Windows set `PYTHONIOENCODING=utf-8` when running `infra/e2b-template/build.py`.
+**Committed:** all M1 work is in `69b2c33` on `yehan-dev`. Before each commit, in `apps/worker`: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pytest` (45 tests; `GENIE_DB_TESTS=1` also runs the two tests against the dev database); and `pnpm --filter proto-host typecheck`. On Windows set `PYTHONIOENCODING=utf-8` when running `infra/e2b-template/build.py`.
+
+**Resolved 2026-11-12:** the preview link that "didn't work" was opened by clicking it in the terminal. Pasted into the Chrome address bar it works (token accepted, cookie set, prototype shown), and the bare address shows "not available" as intended. Always paste preview links into the address bar.
 
 **Next session, pick one (the owner decides):**
-1. **Finish M1:** the smoke check before `awaiting_qa` (M1.8; needs `PREVIEW_TOKEN_SECRET` in `apps/worker/.env` and a `SMOKE_CHECK=false` switch for runs without the host).
+1. **Finish M1:** the smoke check (M1.8).
 2. **M2 recorder screen**, starting with the `/app/record` layout from `Record.dc.html` using the shared components, before any audio code.
 3. Optional Motion polish, offered but not yet approved: hero entrance, hero playhead, dialog fade and scale.
+
+**Session 2026-11-11 (summary):** built M1 almost completely. Worker settings and E2B check → E2B template `genie-web` → internal Genie coding agent ported into `apps/worker` behind a swappable sandbox (prompt adjusted for the public and static export) → checks with one fix round → prompt caching → tarballs and build log to Supabase Storage → job loop with database polling, heartbeats, requeue and events → slug, R2 upload and KV `preview` → Cloudflare prototype host (`infra/proto-host`) run locally with remote bindings → demo guide and sample requirements → Dockerfile and deployment to Railway. Accounts set up: E2B, Cloudflare (R2 bucket `genie-prototypes`, KV namespace, API token with KV edit, workers.dev subdomain `gluonforce`), Railway. Real builds: ~75–90 s and ~$0.07–0.09 each.
 
 **Ways of working:** the owner builds alone and goes one small step at a time: each step is explained and approved before code is written.
 
@@ -129,12 +135,12 @@ Owner: you, unless noted. Items marked **(blocks M1)** must be done before M1 ca
 
 - [x] Git hosting: https://github.com/GluonForce/genie-public.git (branch `main`).
 - [ ] **Prototype domain (Q4)** registered and added to Cloudflare **(needed for M5 only)**. Until then the prototype host runs locally at `{slug}.localhost:8787` (see M1.7), and the domain is read from `PROTO_BASE_DOMAIN` everywhere, so adding it later is configuration only.
-- [ ] Cloudflare account: R2 bucket, KV namespace, Workers enabled, API token.
+- [x] Cloudflare account: R2 bucket `genie-prototypes`, KV namespace `74b12cdd…`, API token (R2 + Workers KV edit), workers.dev subdomain `gluonforce`. Wrangler logged in on the owner's machine.
 - [x] Supabase project (dev), later a separate prod project.
 - [x] Clerk application (dev instance), later prod. Settings: Google and email code sign-in, passwords off, block email subaddresses, block disposable domains, session token claim `{"metadata": "{{user.public_metadata}}"}`.
-- [ ] E2B account and API key **(blocks M1)**.
-- [ ] OpenRouter key with a monthly spend alert; confirm model ids for transcription, requirements and coding (same as internal `.env`).
-- [ ] Railway project for the worker.
+- [x] E2B account and API key.
+- [ ] OpenRouter key with a monthly spend alert; confirm model ids for transcription, requirements and coding (same as internal `.env`). **Partly:** key in use by the worker; coding model confirmed (`anthropic/claude-sonnet-5.5`, fallback `deepseek/deepseek-v4-flash`). Spend alert and the transcription and requirement models still to confirm (M2).
+- [x] Railway project for the worker (deployed from `yehan-dev`).
 - [ ] Vercel project for the web app; DNS for `genie.gluonforce.com`.
 - [ ] Resend account with the sending domain verified (SPF, DKIM) and a sender address.
 - [ ] Sentry project.

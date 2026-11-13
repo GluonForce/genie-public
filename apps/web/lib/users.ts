@@ -73,7 +73,7 @@ async function findByClerkId(clerkUserId: string): Promise<User | undefined> {
 }
 
 /** The visitor's IP from the proxy headers, or null if missing or malformed. */
-async function getClientIp(): Promise<string | null> {
+export async function getClientIp(): Promise<string | null> {
   const headerList = await headers();
   const ip = headerList.get("x-forwarded-for")?.split(",")[0].trim() ?? headerList.get("x-real-ip");
   return ip && isIP(ip) ? ip : null;

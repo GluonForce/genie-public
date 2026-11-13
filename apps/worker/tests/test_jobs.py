@@ -55,6 +55,8 @@ class FakeQueue:
     def __init__(self, jobs_to_hand_out: list[Job] | None = None) -> None:
         self.pending = list(jobs_to_hand_out or [])
         self.calls: list[tuple[str, dict[str, Any]]] = []
+        self.expiry_error: Exception | None = None
+        self.expiry_set_state: Any = None
 
     async def claim(self) -> Job | None:
         return self.pending.pop(0) if self.pending else None
@@ -75,6 +77,12 @@ class FakeQueue:
         return True
 
     async def requeue_stale(self) -> int:
+        return 0
+
+    async def expire_due(self, set_state) -> int:
+        self.expiry_set_state = set_state
+        if self.expiry_error:
+            raise self.expiry_error
         return 0
 
 
@@ -223,3 +231,34 @@ def test_publish_failure_keeps_cost_and_source(sandbox: ClosingSandbox) -> None:
     assert kwargs["cost_usd"] == Decimal("0.05")
     assert kwargs["source_path"] == "sources/p1.tar.gz"
     assert sandbox.closed
+
+
+def test_worker_expires_and_keeps_building_when_expiry_fails(
+    sandbox: ClosingSandbox, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    async def set_state(slug: str, state: str) -> None:
+        pass
+
+    async def scenario() -> FakeQueue:
+        queue = FakeQueue([job()])
+        queue.expiry_error = RuntimeError("Cloudflare is down")
+        stop = asyncio.Event()
+        original = jobs.run_job
+
+        async def run_job(*args, **kwargs):
+            await original(
+                *args,
+                build=stub_build(result(True)),
+                save=stub_save,
+                publish=stub_publish,
+                **kwargs,
+            )
+            stop.set()
+
+        monkeypatch.setattr(jobs, "run_job", run_job)
+        await asyncio.wait_for(jobs.run_worker(queue, None, lambda: sandbox, stop, set_state), 5)
+        return queue
+
+    queue = asyncio.run(scenario())
+    assert queue.expiry_set_state is set_state
+    assert [kind for kind, _ in queue.calls] == ["success"]

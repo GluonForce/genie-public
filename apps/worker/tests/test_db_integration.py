@@ -110,3 +110,65 @@ def test_failure_then_requeue_lifecycle_writes_events() -> None:
         assert events[1]["reason"] == "boom"
 
     run_async(with_approved_prototype(test))
+
+
+async def release_past_expiry(pool, prototype_id) -> str:
+    """Make the test prototype released with an expiry a minute ago; returns its slug.
+
+    expire_due works on every due prototype, so this skips while real ones are due: the running
+    worker should expire those, not a test with a fake KV.
+    """
+
+    due = await fetch(
+        pool, "select 1 from prototypes where status = 'released' and expires_at <= now()"
+    )
+    if due:
+        pytest.skip("real prototypes are due to expire")
+    slug = f"dev-expiry-{uuid.uuid4().hex[:8]}"
+    async with pool.connection() as conn:
+        await conn.execute(
+            """update prototypes set status = 'released', slug = %s,
+               expires_at = now() - interval '1 minute' where id = %s""",
+            (slug, prototype_id),
+        )
+    return slug
+
+
+def test_expire_due_turns_off_released_prototypes_past_their_expiry() -> None:
+    async def test(pool, prototype_id):
+        slug = await release_past_expiry(pool, prototype_id)
+        switched: list[tuple[str, str]] = []
+
+        async def set_state(slug: str, state: str) -> None:
+            switched.append((slug, state))
+
+        assert await Database(pool, "test-worker").expire_due(set_state) == 1
+        assert switched == [(slug, "expired")]
+        [row] = await fetch(pool, "select status from prototypes where id = %s", prototype_id)
+        assert row["status"] == "expired"
+        [event] = await fetch(
+            pool,
+            "select from_status, to_status from events where prototype_id = %s and action = %s",
+            prototype_id,
+            "expired",
+        )
+        assert (event["from_status"], event["to_status"]) == ("released", "expired")
+        # Nothing left to do on the next round
+        assert await Database(pool, "test-worker").expire_due(set_state) == 0
+
+    run_async(with_approved_prototype(test))
+
+
+def test_expire_due_rolls_back_when_cloudflare_fails() -> None:
+    async def test(pool, prototype_id):
+        await release_past_expiry(pool, prototype_id)
+
+        async def set_state(slug: str, state: str) -> None:
+            raise RuntimeError("Cloudflare is down")
+
+        with pytest.raises(RuntimeError):
+            await Database(pool, "test-worker").expire_due(set_state)
+        [row] = await fetch(pool, "select status from prototypes where id = %s", prototype_id)
+        assert row["status"] == "released"
+
+    run_async(with_approved_prototype(test))

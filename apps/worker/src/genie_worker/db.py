@@ -5,7 +5,7 @@ Every status change is a conditional update plus an events row in the same trans
 
 import asyncio
 import sys
-from collections.abc import Coroutine
+from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any
@@ -16,6 +16,7 @@ from psycopg.types.json import Jsonb
 from psycopg_pool import AsyncConnectionPool
 
 from genie_worker.core.config import settings
+from genie_worker.publish import SiteState
 from genie_worker.slugs import make_slug
 
 # A build whose heartbeat is older than this is assumed dead and goes back to the queue
@@ -222,6 +223,54 @@ class Database:
                     reason=f"no heartbeat for {STALE_AFTER}",
                 )
         return len(rows)
+
+    async def expire_due(self, set_state: Callable[[str, SiteState], Awaitable[None]]) -> int:
+        """Turn off released prototypes whose 3 days are over (BR-12, AC-9).
+
+        One transaction per prototype: KV goes to `expired` first, then the status and the event.
+        If Cloudflare fails, the transaction rolls back and the prototype is tried again next time.
+        """
+
+        expired = 0
+        while True:
+            async with self._pool.connection() as conn, conn.transaction():
+                cur = await conn.execute(
+                    """
+                    select id, user_id, slug, build_attempts, expires_at from prototypes
+                    where status = 'released' and expires_at <= now()
+                    order by expires_at
+                    limit 1
+                    for update skip locked
+                    """
+                )
+                row = await cur.fetchone()
+                if row is None:
+                    return expired
+                await set_state(row["slug"], "expired")
+                await conn.execute(
+                    """
+                    update prototypes set status = 'expired', status_changed_at = now()
+                    where id = %s
+                    """,
+                    (row["id"],),
+                )
+                job = Job(
+                    str(row["id"]),
+                    str(row["user_id"]),
+                    {},
+                    row["build_attempts"],
+                    None,
+                    row["slug"],
+                )
+                await _event(
+                    conn,
+                    job,
+                    "expired",
+                    "released",
+                    "expired",
+                    details={"expires_at": row["expires_at"].isoformat()},
+                )
+            expired += 1
 
 
 async def _assign_slug(conn: Any, prototype_id: Any, title: str | None) -> str:

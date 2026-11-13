@@ -3,7 +3,7 @@ the outcome. One job at a time (architecture 7.2)."""
 
 import asyncio
 import logging
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from decimal import Decimal
 from typing import Any, Protocol
 
@@ -14,7 +14,7 @@ from genie_worker.artifacts import save_artifacts
 from genie_worker.build import BuildResult, build_and_check
 from genie_worker.db import Job
 from genie_worker.models.requirements import RequirementsDraft
-from genie_worker.publish import site_store, site_url, state_store
+from genie_worker.publish import SiteState, site_store, site_url, state_store
 from genie_worker.sandbox import Sandbox
 from genie_worker.storage import Storage
 
@@ -24,6 +24,10 @@ POLL_SECONDS = 5.0
 HEARTBEAT_SECONDS = 30.0
 # Stale builds are looked for this often, not on every poll
 STALE_CHECK_SECONDS = 300.0
+# Released prototypes past their expiry are turned off this often (between builds)
+EXPIRY_CHECK_SECONDS = 60.0
+
+SetState = Callable[[str, SiteState], Awaitable[None]]
 
 
 class Queue(Protocol):
@@ -35,6 +39,7 @@ class Queue(Protocol):
     async def finish_failure(self, job: Job, **kwargs: Any) -> bool: ...
     async def requeue(self, job: Job, reason: str) -> bool: ...
     async def requeue_stale(self) -> int: ...
+    async def expire_due(self, set_state: SetState) -> int: ...
 
 
 async def run_job(
@@ -112,9 +117,11 @@ async def run_worker(
     storage: Storage,
     open_sandbox: Callable[[], Sandbox],
     stop: asyncio.Event,
+    set_state: SetState | None = None,
 ) -> None:
     logger.info("Worker started; polling for approved prototypes every %ss", POLL_SECONDS)
     last_stale_check = float("-inf")
+    last_expiry_check = float("-inf")
     loop = asyncio.get_running_loop()
     while not stop.is_set():
         if loop.time() - last_stale_check >= STALE_CHECK_SECONDS:
@@ -122,6 +129,10 @@ async def run_worker(
             if requeued:
                 logger.warning("Requeued %s build(s) that stopped sending heartbeats", requeued)
             last_stale_check = loop.time()
+
+        if loop.time() - last_expiry_check >= EXPIRY_CHECK_SECONDS:
+            await _expire(queue, set_state)
+            last_expiry_check = loop.time()
 
         job = await queue.claim()
         if job is None:
@@ -148,6 +159,19 @@ async def publish_preview(slug: str, site_archive: bytes) -> str:
     await asyncio.to_thread(site_store().publish, slug, site_archive)
     await state_store().set_state(slug, "preview")
     return site_url(slug)
+
+
+async def _expire(queue: Queue, set_state: SetState | None) -> None:
+    """Expire due prototypes; a Cloudflare or database error is logged and retried next time,
+    so it never stops the builds."""
+
+    try:
+        expired = await queue.expire_due(set_state or state_store().set_state)
+    except Exception:
+        logger.exception("Expiring released prototypes failed; trying again later")
+        return
+    if expired:
+        logger.info("Expired %s prototype(s) whose 3 days were over", expired)
 
 
 async def _heartbeat(queue: Queue, job: Job) -> None:

@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { rebuildPrototype, releasePrototype } from "../actions";
+import { DeclineDialog } from "./review-decision";
 
-/** The two QA decisions from design A4: Release, or Rebuild with a note. */
-export function QaActions({ prototypeId }: { prototypeId: string }) {
+/** The QA decisions from design A4: Release, Rebuild with a note, or Decline. */
+export function QaActions({ prototypeId, title, email }: { prototypeId: string; title: string; email: string }) {
+  const [declining, setDeclining] = useState(false);
   const [releaseState, release, releasing] = useActionState(
     releasePrototype.bind(null, prototypeId),
     undefined,
@@ -61,7 +63,22 @@ export function QaActions({ prototypeId }: { prototypeId: string }) {
             {rebuildState.error}
           </p>
         )}
+        <button
+          type="button"
+          onClick={() => setDeclining(true)}
+          disabled={busy}
+          className="cursor-pointer self-start py-2.5 font-bold text-danger underline-offset-4 hover:underline disabled:opacity-50"
+        >
+          Decline instead
+        </button>
       </section>
+      <DeclineDialog
+        prototypeId={prototypeId}
+        title={title}
+        email={email}
+        open={declining}
+        onClose={() => setDeclining(false)}
+      />
     </>
   );
 }

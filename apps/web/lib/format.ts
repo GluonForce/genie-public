@@ -33,7 +33,7 @@ export function formatDateTime(date: Date): string {
   return `${day} at ${time}`;
 }
 
-/** numeric(10,4) text → "$0.08" */
-export function formatCost(value: string | null): string {
-  return `$${Number(value ?? 0).toFixed(2)}`;
+/** numeric(10,4) text → "$0.08"; `digits` 4 for small amounts such as transcription. */
+export function formatCost(value: string | number | null, digits = 2): string {
+  return `$${Number(value ?? 0).toFixed(digits)}`;
 }

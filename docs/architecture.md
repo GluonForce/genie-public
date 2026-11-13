@@ -134,7 +134,7 @@ sequenceDiagram
 On failure the worker retries once automatically, then sets `build_failed` and emails the admins (FR-B7). Retry and QA *Rebuild* set the status back to `approved` (the queue), increment `build_attempts` on the next claim, and log an event. *Rebuild* stores the admin's note in `build_note`, which is passed to the agent as extra instructions.
 
 ### 3.3 Expiry
-The Railway worker runs an expiry check every 15 minutes: for requests with `status = 'released' and expires_at < now()`, it sets KV `state[slug]=expired` and status `expired`. R2 objects and both tarballs are kept, so the later redeploy feature only flips KV back to `live` with a new `expires_at`. An R2 lifecycle rule can delete `sites/` objects after e.g. 30 days; a redeploy would then re-upload from `site.tar.gz`.
+The Railway worker runs an expiry check every minute between builds (`EXPIRY_CHECK_SECONDS` in `jobs.py`; a running build delays it by a few minutes at most): for requests with `status = 'released' and expires_at <= now()`, it sets KV `state[slug]=expired`, then status `expired` and an `expired` event, one transaction per prototype, so a Cloudflare failure leaves it released until the next check. R2 objects and both tarballs are kept, so an admin's Redeploy only flips KV back to `live` with a new `expires_at`. An R2 lifecycle rule can delete `sites/` objects after e.g. 30 days; a redeploy would then re-upload from `site.tar.gz`.
 
 ---
 
@@ -160,6 +160,7 @@ stateDiagram-v2
     released --> expired: 3 days elapsed
     released --> offline: admin take offline
     offline --> released: admin restore
+    expired --> released: admin redeploy (fresh 3 days)
     declined --> [*]
     user_declined --> [*]
 ```
@@ -239,6 +240,8 @@ create table prototypes (
   build_claimed_by      text,
   build_heartbeat_at    timestamptz,
   build_cost_usd        numeric(10,4) not null default 0,           -- total across attempts
+  transcription_cost_usd numeric(10,4) not null default 0,          -- speech to text, every Generate
+  requirements_cost_usd numeric(10,4) not null default 0,           -- requirement agent, Generate and change requests
   source_path           text,                                       -- sources/{id}.tar.gz
   site_path             text,                                       -- sites/{id}.tar.gz (static out/)
   -- delivery
@@ -279,7 +282,7 @@ create index on events (ip);
 | | `account_deleted` | system | |
 | Recording | `recording_started` | user | `ip` set |
 | | `recording_discarded` | user | re-record before Generate |
-| Requirements | `requirements_generated` | user | `{requirements, model, transcript_chars}` = version 1 |
+| Requirements | `requirements_generated` | user | `{requirements, model, transcript_chars, transcription_model, transcription_cost_usd, requirements_cost_usd}` = version 1 |
 | | `requirements_revised` | user | `{remark, requirements, model}` = versions 2–3 |
 | | `submitted` | user | `ip` set; `{ip_flag_matches: [user ids]}` |
 | | `user_declined` | user | `reason` = user's text |
@@ -290,7 +293,7 @@ create index on events (ip);
 | | `build_requeued` | system | `building → approved`; `reason` = no heartbeat, or worker shut down mid-build |
 | Delivery | `qa_ready` · `released` | system · admin | |
 | | `expired` | system | |
-| | `taken_offline` · `restored` | admin | `reason` |
+| | `taken_offline` · `restored` | admin | `restored`: `{expires_at}`; `from_status` `expired` = redeploy for a fresh 3 days, `offline` = original expiry kept while time is left |
 | Security | `blocked_attempt` | user | `{what}`, e.g. third remark, second submission, non-admin on `/admin` |
 
 **IP flag** (at submit; matching accounts shown to admins):
@@ -344,8 +347,8 @@ Enforced in three layers:
 | `GET  /api/admin/requests/:id/preview` | admin | Redirect to the preview URL with a short-lived signed token |
 | `POST /api/admin/requests/:id/release` | admin | QA passed: go live, start 3-day clock, email user |
 | `POST /api/admin/requests/:id/rebuild` | admin | QA failed: new build with an optional note to the agent |
-| `POST /api/admin/requests/:id/offline` · `/restore` | admin | Takedown / restore |
-| `GET  /api/admin/requests/:id/source` · `/logs/:attempt` | admin | Signed URLs for source tarball / build log |
+| Server actions `takeOffline` · `restorePrototype` | admin | Takedown / restore or redeploy (KV switch in the same transaction) |
+| `GET  /api/admin/requests/:id/source` · `/logs/:attempt` | admin | Source tarball / build log, streamed from Storage as a download |
 
 All state-changing user endpoints check ownership **and** the status transition in one SQL `update … where status = $expected`, so double-clicks and races can't skip the rules. Each user endpoint is rate limited (e.g. Upstash or a Postgres counter).
 
